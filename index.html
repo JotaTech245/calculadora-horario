@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Horário de Saída</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Horário de Saída</h1>
+        <label for="entrada">Horário de Entrada (HH:mm):</label>
+        <input type="time" id="entrada" required>
+
+        <label for="horasTrabalho">Tempo de Trabalho (horas):</label>
+        <input type="number" id="horasTrabalho" required>
+
+        <label for="minutosAlmoco">Tempo de Almoço (minutos):</label>
+        <input type="number" id="minutosAlmoco" required>
+
+        <button onclick="calcularSaida()">Calcular Horário de Saída</button>
+
+        <h2 id="saida"></h2>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

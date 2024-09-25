@@ -1,0 +1,63 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #e0f7fa; /* Fundo mais suave */
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    text-align: center; /* Centraliza o texto */
+}
+
+h1 {
+    color: #00796b; /* Cor do título */
+    margin-bottom: 20px;
+}
+
+label {
+    margin-top: 15px;
+    display: block;
+    font-weight: bold; /* Destaca os rótulos */
+}
+
+input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #00796b; /* Borda mais grossa */
+    border-radius: 5px;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: #004d40; /* Cor ao focar */
+    outline: none; /* Remove o contorno padrão */
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #00796b; /* Cor do botão */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background: #004d40; /* Cor do botão ao passar o mouse */
+}
+
+#saida {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #d32f2f; /* Cor do texto de saída */
+}
