@@ -1,6 +1,9 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #e0f7fa; /* Fundo mais suave */
+    background-image: url('https://cdn.discordapp.com/attachments/1144044652157227131/1288822246894211133/fundo.jpg?ex=66f694c0&is=66f54340&hm=5c53fc694df7824d3ead75570dd8b4516eb3d2c3796960a192950bd2868e4e1e&'); /* Substitua pela URL da sua imagem */
+    background-size: cover; /* Faz a imagem cobrir toda a tela */
+    background-position: center; /* Centraliza a imagem */
+    background-repeat: no-repeat; /* Não repete a imagem */
     margin: 0;
     padding: 20px;
 }
@@ -8,7 +11,7 @@ body {
 .container {
     max-width: 400px;
     margin: auto;
-    background: white;
+    background: rgba(255, 255, 255, 0.8); /* Fundo branco com leve transparência */
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
