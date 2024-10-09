@@ -35,7 +35,7 @@ function mostrarCalculadora(calculadora) {
         calculadoraExtras.style.display = 'block';
     }
 
-    // Fecha o menu
+    // Fecha o menu após a seleção
     menuCheckbox.checked = false;
 }
 
@@ -49,11 +49,9 @@ function calcularExtras() {
         return;
     }
 
-    const salarioDiario = salarioMensal / 30; // considerando 30 dias no mês
-    const valorPorHora = salarioDiario / horasTrabalhadas;
+    const salarioDiario = salarioMensal / 30; // Supondo 30 dias no mês
+    const valorHora = salarioDiario / horasTrabalhadas; // Calcula o valor da hora de trabalho
 
-    const totalExtras = valorPorHora * horasExtrasMes;
-    const totalGanho = salarioMensal + totalExtras;
-
-    document.getElementById('resultado-extras').innerText = `Total a Receber no Mês com Horas Extras: R$ ${totalGanho.toFixed(2)}`;
+    const ganhoExtras = horasExtrasMes * valorHora * 1.5; // 50% a mais pelas horas extras
+    document.getElementById('resultado-extras').innerText = `Você deve receber R$ ${ganhoExtras.toFixed(2)} em horas extras no mês.`;
 }

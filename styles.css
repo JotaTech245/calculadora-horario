@@ -20,6 +20,10 @@ body {
     z-index: 1000;
 }
 
+.menu-checkbox {
+    display: none; /* Esconde o checkbox */
+}
+
 .menu-icon {
     cursor: pointer;
     display: flex;
@@ -27,7 +31,8 @@ body {
     justify-content: space-around;
     width: 30px;
     height: 30px;
-    background: transparent;
+    background: transparent; /* Remove qualquer fundo */
+    border: none; /* Remove bordas */
 }
 
 .menu-icon span {
