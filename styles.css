@@ -1,99 +1,168 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-image: url('https://cdn.discordapp.com/attachments/1144044652157227131/1293371897924292699/logo.site_1.jpg?ex=670721f2&is=6705d072&hm=aacf5c97615073d58066bd6a9e7c9928de0ab7243b51b7c2cbd58269cfcaa6a1&'); /* Substitua pela URL da sua imagem */
-    -webkit-background-size: cover; /* Para compatibilidade com iOS */
-    background-size: cover; /* Faz a imagem cobrir toda a tela */
-    background-position: center; /* Centraliza a imagem */
-    background-repeat: no-repeat; /* Não repete a imagem */
+    background-image: url('https://cdn.discordapp.com/attachments/1144044652157227131/1293371897924292699/logo.site_1.jpg?ex=670721f2&is=6705d072&hm=aacf5c97615073d58066bd6a9e7c9928de0ab7243b51b7c2cbd58269cfcaa6a1&');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     margin: 0;
     padding: 20px;
-    height: 100vh; /* Ajusta para sempre cobrir a altura total da tela */
-    display: flex; /* Flexbox para centralizar */
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.menu-toggle {
+    position: relative;
+    z-index: 1000;
+}
+
+.menu-icon {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 30px;
+    background: transparent;
+}
+
+.menu-icon span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+nav {
+    display: none;
+}
+
+#menu-checkbox:checked + .menu-icon span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+#menu-checkbox:checked + .menu-icon span:nth-child(2) {
+    opacity: 0;
+}
+
+#menu-checkbox:checked + .menu-icon span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+#menu-checkbox:checked ~ .menu {
+    display: block;
+}
+
+.menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 100;
+}
+
+.menu ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu li {
+    margin: 10px 0;
+}
+
+.menu a {
+    color: white;
+    text-decoration: none;
+    font-size: 2em; /* Tamanho aumentado para os ícones */
 }
 
 .container {
     max-width: 400px;
-    width: 100%; /* Garante que o container preencha o espaço disponível */
-    margin: 20px auto; /* Ajusta a margem para dispositivos móveis */
-    background: rgba(0, 0, 0, 0.8); /* Fundo preto com leve transparência */
+    width: 100%;
+    margin: 20px auto;
+    background: rgba(0, 0, 0, 0.8);
     padding: 30px;
-    border-radius: 15px; /* Aumenta o arredondamento */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); /* Sombras mais profundas */
-    text-align: center; /* Centraliza o texto */
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    text-align: center;
 }
 
 h1 {
-    color: #b008da; /* Cor do título em amarelo */
+    color: #b008da;
     margin-bottom: 20px;
-    font-size: 1.8em; /* Aumenta o tamanho da fonte */
+    font-size: 1.8em;
 }
 
 label {
     margin-top: 15px;
     display: block;
-    font-weight: bold; /* Destaca os rótulos */
-    color: #fff; /* Torna o texto branco para maior contraste */
-    text-align: left; /* Alinha os rótulos à esquerda */
+    font-weight: bold;
+    color: #fff;
+    text-align: left;
 }
 
 input {
     width: calc(100% - 20px);
     padding: 10px;
     margin: 10px 0;
-    border: 2px solid #b008da; /* Borda amarela */
-    border-radius: 10px; /* Arredonda os campos de input */
-    background-color: #333; /* Fundo do campo de texto em cinza escuro */
-    color: #fff; /* Cor do texto em branco */
+    border: 2px solid #b008da;
+    border-radius: 10px;
+    background-color: #333;
+    color: #fff;
     transition: border-color 0.3s;
-    font-size: 1.1em; /* Tamanho de fonte aumentado */
+    font-size: 1.1em;
 }
 
 input:focus {
-    border-color: #b008da; /* Cor ao focar, um tom mais brilhante de amarelo */
-    outline: none; /* Remove o contorno padrão */
+    border-color: #b008da;
+    outline: none;
 }
 
 button {
     width: 100%;
-    padding: 15px; /* Aumenta o padding */
-    background: #b008da; /* Cor do botão em amarelo */
-    color: #000; /* Texto em preto para contraste */
+    padding: 15px;
+    background: #b008da;
+    color: #000;
     border: none;
-    border-radius: 30px; /* Mais arredondado */
+    border-radius: 30px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 1.2em; /* Tamanho de fonte maior */
+    font-size: 1.2em;
     transition: background-color 0.3s;
 }
 
 button:hover {
-    background: #b008da; /* Cor do botão ao passar o mouse, mais clara */
+    background: #b008da;
 }
 
-#saida {
+#saida, #resultado-extras {
     margin-top: 20px;
     font-size: 1.2em;
-    color: #d32f2f; /* Cor do texto de saída */
+    color: #d32f2f;
 }
 
-/* Ajustes para telas menores (responsividade) */
 @media (max-width: 768px) {
     body {
         padding: 10px;
     }
 
     .container {
-        padding: 20px; /* Reduz o padding em telas menores */
+        padding: 20px;
     }
 
     h1 {
-        font-size: 1.5em; /* Ajusta o tamanho da fonte do título */
+        font-size: 1.5em;
     }
 
     input, button {
-        font-size: 1em; /* Ajusta o tamanho da fonte dos campos e botões */
-        padding: 12px; /* Ajusta o padding dos inputs e botões */
+        font-size: 1em;
+        padding: 12px;
     }
 }

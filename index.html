@@ -3,11 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Horário de Saída</title>
+    <title>Calculadora de Salário</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="menu-toggle">
+        <input type="checkbox" id="menu-checkbox">
+        <label for="menu-checkbox" class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav class="menu">
+            <ul>
+                <li><a href="#" onclick="mostrarCalculadora('saida')">🕒</a></li>
+                <li><a href="#" onclick="mostrarCalculadora('extras')">💰</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="container" id="calculadora-saida">
         <h1>Calculadora de Horário de Saída</h1>
         <label for="entrada">Horário de Entrada (HH:mm):</label>
         <input type="time" id="entrada" required>
@@ -22,7 +37,23 @@
 
         <h2 id="saida"></h2>
     </div>
-    
+
+    <div class="container" id="calculadora-extras" style="display: none;">
+        <h1>Calculadora de Horas Extras</h1>
+        <label for="salarioMensal">Salário Mensal:</label>
+        <input type="number" id="salarioMensal" required>
+
+        <label for="horasTrabalhadas">Horas Trabalhadas por Dia:</label>
+        <input type="number" id="horasTrabalhadas" required>
+
+        <label for="horasExtrasMes">Total de Horas Extras no Mês:</label>
+        <input type="number" id="horasExtrasMes" required>
+
+        <button onclick="calcularExtras()">Calcular Total do Mês com Horas Extras</button>
+
+        <h2 id="resultado-extras"></h2>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

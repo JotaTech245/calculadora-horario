@@ -21,3 +21,39 @@ function calcularSaida() {
     const horarioSaida = saida.toTimeString().slice(0, 5); // formata para HH:mm
     document.getElementById('saida').innerText = `Você deve sair às: ${horarioSaida}`;
 }
+
+function mostrarCalculadora(calculadora) {
+    const calculadoraSaida = document.getElementById('calculadora-saida');
+    const calculadoraExtras = document.getElementById('calculadora-extras');
+    const menuCheckbox = document.getElementById('menu-checkbox');
+
+    if (calculadora === 'saida') {
+        calculadoraSaida.style.display = 'block';
+        calculadoraExtras.style.display = 'none';
+    } else {
+        calculadoraSaida.style.display = 'none';
+        calculadoraExtras.style.display = 'block';
+    }
+
+    // Fecha o menu
+    menuCheckbox.checked = false;
+}
+
+function calcularExtras() {
+    const salarioMensal = parseFloat(document.getElementById('salarioMensal').value);
+    const horasTrabalhadas = parseInt(document.getElementById('horasTrabalhadas').value);
+    const horasExtrasMes = parseInt(document.getElementById('horasExtrasMes').value);
+
+    if (isNaN(salarioMensal) || isNaN(horasTrabalhadas) || isNaN(horasExtrasMes)) {
+        alert("Por favor, preencha todos os campos corretamente.");
+        return;
+    }
+
+    const salarioDiario = salarioMensal / 30; // considerando 30 dias no mês
+    const valorPorHora = salarioDiario / horasTrabalhadas;
+
+    const totalExtras = valorPorHora * horasExtrasMes;
+    const totalGanho = salarioMensal + totalExtras;
+
+    document.getElementById('resultado-extras').innerText = `Total a Receber no Mês com Horas Extras: R$ ${totalGanho.toFixed(2)}`;
+}
