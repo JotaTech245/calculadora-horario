@@ -14,7 +14,9 @@ body {
 }
 
 .menu-toggle {
-    position: relative;
+    position: absolute;
+    top: 20px;
+    left: 20px;
     z-index: 1000;
 }
 
@@ -59,7 +61,7 @@ nav {
 .menu {
     position: absolute;
     top: 40px;
-    right: 0;
+    left: 0; /* Alinhado à esquerda */
     background-color: rgba(0, 0, 0, 0.8);
     border-radius: 5px;
     padding: 10px;
