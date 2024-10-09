@@ -1,6 +1,6 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-image: url('https://cdn.discordapp.com/attachments/1144044652157227131/1288838940757069915/fundo-de-meio-tom-com-ondas_23-2148907690.jpg?ex=66f6a44c&is=66f552cc&hm=4b1424362de2f996effe028603a4264121aab298a23ab95a8c8246e30c9c8b7a&'); /* Substitua pela URL da sua imagem */
+    background-image: url('https://cdn.discordapp.com/attachments/1144044652157227131/1293371897924292699/logo.site_1.jpg?ex=670721f2&is=6705d072&hm=aacf5c97615073d58066bd6a9e7c9928de0ab7243b51b7c2cbd58269cfcaa6a1&'); /* Substitua pela URL da sua imagem */
     background-size: cover; /* Faz a imagem cobrir toda a tela */
     background-position: center; /* Centraliza a imagem */
     background-repeat: no-repeat; /* Não repete a imagem */
@@ -24,7 +24,7 @@ body {
 }
 
 h1 {
-    color: #f4b400; /* Cor do título em amarelo */
+    color: #b008da; /* Cor do título em amarelo */
     margin-bottom: 20px;
     font-size: 1.8em; /* Aumenta o tamanho da fonte */
 }
@@ -41,7 +41,7 @@ input {
     width: calc(100% - 20px);
     padding: 10px;
     margin: 10px 0;
-    border: 2px solid #f4b400; /* Borda amarela */
+    border: 2px solid #b008da; /* Borda amarela */
     border-radius: 10px; /* Arredonda os campos de input */
     background-color: #333; /* Fundo do campo de texto em cinza escuro */
     color: #fff; /* Cor do texto em branco */
@@ -50,14 +50,14 @@ input {
 }
 
 input:focus {
-    border-color: #ffd700; /* Cor ao focar, um tom mais brilhante de amarelo */
+    border-color: #b008da; /* Cor ao focar, um tom mais brilhante de amarelo */
     outline: none; /* Remove o contorno padrão */
 }
 
 button {
     width: 100%;
     padding: 15px; /* Aumenta o padding */
-    background: #f4b400; /* Cor do botão em amarelo */
+    background: #b008da; /* Cor do botão em amarelo */
     color: #000; /* Texto em preto para contraste */
     border: none;
     border-radius: 30px; /* Mais arredondado */
@@ -68,7 +68,7 @@ button {
 }
 
 button:hover {
-    background: #ffd700; /* Cor do botão ao passar o mouse, mais clara */
+    background: #b008da; /* Cor do botão ao passar o mouse, mais clara */
 }
 
 #saida {
