@@ -20,6 +20,7 @@
         <ul>
             <li><a href="javascript:void(0)" onclick="mostrarCalculadora('saida')">🕒</a></li>
             <li><a href="javascript:void(0)" onclick="mostrarCalculadora('extras')">💰</a></li>
+            <li><a href="javascript:void(0)" onclick="mostrarCalculadora('registro')">📅</a></li>
         </ul>
     </nav>
 
@@ -53,6 +54,37 @@
         <button onclick="calcularExtras()">Calcular Ganho com Horas Extras</button>
 
         <h2 id="resultado-extras"></h2>
+    </div>
+
+    <div class="container" id="calculadora-registro" style="display: none;">
+        <h1>Registro de Horas Extras</h1>
+
+        <div id="calendario">
+            <table>
+                <thead>
+                    <tr>
+                        <th>D</th>
+                        <th>S</th>
+                        <th>T</th>
+                        <th>Q</th>
+                        <th>Q</th>
+                        <th>S</th>
+                        <th>S</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoCalendario">
+                    <!-- Linhas do calendário geradas dinamicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <label for="horasExtras">Horas Extras Feitas:</label>
+        <input type="number" step="0.1" id="horasExtras" required>
+
+        <button onclick="salvarHistorico()">Registrar Horas Extras</button>
+        <button class="limpar" onclick="limparHistorico()">Limpar Histórico</button>
+
+        <h2 id="resultado-registro"></h2>
     </div>
     
     <script src="script.js"></script>
