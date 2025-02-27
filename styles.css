@@ -21,7 +21,7 @@ body {
 }
 
 .menu-checkbox {
-    display: none; /* Esconde o checkbox */
+    display: none; 
 }
 
 .menu-icon {
@@ -31,15 +31,15 @@ body {
     justify-content: space-around;
     width: 30px;
     height: 30px;
-    background: transparent; /* Remove qualquer fundo */
-    border: none; /* Remove bordas */
+    background: transparent; 
+    border: none; 
 }
 
 .menu-icon span {
     display: block;
     width: 100%;
     height: 3px;
-    background: #b008da; /* Cor do menu */
+    background: #b008da; 
     transition: all 0.3s ease;
 }
 
@@ -66,7 +66,7 @@ nav {
 .menu {
     position: absolute;
     top: 40px;
-    left: 0; /* Alinhado à esquerda */
+    left: 0; 
     background-color: rgba(0, 0, 0, 0.8);
     border-radius: 5px;
     padding: 10px;
@@ -87,7 +87,7 @@ nav {
 .menu a {
     color: white;
     text-decoration: none;
-    font-size: 2em; /* Tamanho aumentado para os ícones */
+    font-size: 2em; 
 }
 
 .container {
@@ -150,10 +150,9 @@ button:hover {
 }
 
 button.limpar {
-    width: auto; /* Ajusta a largura do botão para o conteúdo */
-    padding: 10px 20px; /* Ajusta o padding */
-    font-size: 1em; /* Tamanho da fonte */
-    margin-top: 10px; /* Espaço acima do botão */
+    width: auto; 
+    padding: 10px 20px; 
+    margin-top: 10px; 
 }
 
 #saida, #resultado-extras, #resultado-registro {
@@ -162,7 +161,7 @@ button.limpar {
     color: #d32f2f;
 }
 
-/* Novo estilo para o calendário */
+
 #calendario {
     margin: 20px auto;
     text-align: center;
@@ -174,26 +173,25 @@ button.limpar {
 }
 
 #calendario th, #calendario td {
-    border: 1px solid #b008da; /* Borda para o calendário */
+    border: 1px solid #b008da; 
     padding: 10px;
     font-size: 1.2em;
     cursor: pointer;
-    background-color: #f8f9fa; /* Cor de fundo das células */
-    transition: background-color 0.3s; /* Transição suave */
+    background-color: #f8f9fa; 
+    transition: background-color 0.3s; 
 }
 
 #calendario th {
-    background-color: #b008da; /* Cor do cabeçalho */
-    color: #ffffff; /* Texto branco no cabeçalho */
-}
+    background-color: #b008da; 
+    color: #ffffff; 
 
 #calendario td:hover {
-    background-color: rgba(176, 8, 218, 0.3); /* Cor ao passar o mouse */
+    background-color: rgba(176, 8, 218, 0.3); 
 }
 
 #calendario td[data-dia="destacado"] {
-    background-color: #b008da; /* Cor para o dia destacado */
-    color: #ffffff; /* Texto branco para o dia destacado */
+    background-color: #b008da; 
+    color: #ffffff; 
 }
 
 @media (max-width: 768px) {
