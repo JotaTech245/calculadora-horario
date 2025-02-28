@@ -1,6 +1,6 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-image: url('https://drive.google.com/file/d/1tON7UYWyZScQd1lx46q2CW4fv_Ypv4L9/view?usp=sharing');
+    background-image: url('https://drive.google.com/uc?export=view&id=1tON7UYWyZScQd1lx46q2CW4fv_Ypv4L9');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -161,7 +161,6 @@ button.limpar {
     color: #d32f2f;
 }
 
-
 #calendario {
     margin: 20px auto;
     text-align: center;
@@ -184,6 +183,7 @@ button.limpar {
 #calendario th {
     background-color: #b008da; 
     color: #ffffff; 
+}
 
 #calendario td:hover {
     background-color: rgba(176, 8, 218, 0.3); 
