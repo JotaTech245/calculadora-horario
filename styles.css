@@ -1,6 +1,6 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-image: url('https://drive.google.com/uc?export=view&id=1tON7UYWyZScQd1lx46q2CW4fv_Ypv4L9');
+    background-image: url('https://cdn.discordapp.com/attachments/1144044652157227131/1293371897924292699/logo.site_1.jpg?ex=67c1ae32&is=67c05cb2&hm=ab14d3d9e0afed1abecb02e380f9f6bb8a8ff18b4e0d1eca1612583274b90350&');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -161,6 +161,7 @@ button.limpar {
     color: #d32f2f;
 }
 
+
 #calendario {
     margin: 20px auto;
     text-align: center;
@@ -183,7 +184,6 @@ button.limpar {
 #calendario th {
     background-color: #b008da; 
     color: #ffffff; 
-}
 
 #calendario td:hover {
     background-color: rgba(176, 8, 218, 0.3); 
