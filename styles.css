@@ -1,214 +1,299 @@
+/* Reset e estrutura geral */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
 body {
-    font-family: 'Arial', sans-serif;
-    background-image: url('https://cdn.discordapp.com/attachments/1144044652157227131/1293371897924292699/logo.site_1.jpg?ex=67c1ae32&is=67c05cb2&hm=ab14d3d9e0afed1abecb02e380f9f6bb8a8ff18b4e0d1eca1612583274b90350&');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    margin: 0;
-    padding: 20px;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.menu-toggle {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-}
-
-.menu-checkbox {
-    display: none; 
-}
-
-.menu-icon {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 30px;
-    height: 30px;
-    background: transparent; 
-    border: none; 
-}
-
-.menu-icon span {
-    display: block;
-    width: 100%;
-    height: 3px;
-    background: #b008da; 
-    transition: all 0.3s ease;
-}
-
-nav {
-    display: none;
-}
-
-#menu-checkbox:checked + .menu-icon span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-#menu-checkbox:checked + .menu-icon span:nth-child(2) {
-    opacity: 0;
-}
-
-#menu-checkbox:checked + .menu-icon span:nth-child(3) {
-    transform: rotate(-45deg) translate(5px, -5px);
-}
-
-#menu-checkbox:checked ~ .menu {
-    display: block;
-}
-
-.menu {
-    position: absolute;
-    top: 40px;
-    left: 0; 
-    background-color: rgba(0, 0, 0, 0.8);
-    border-radius: 5px;
-    padding: 10px;
-    z-index: 100;
-}
-
-.menu ul {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.menu li {
-    margin: 10px 0;
-}
-
-.menu a {
-    color: white;
-    text-decoration: none;
-    font-size: 2em; 
-}
-
-.container {
-    max-width: 400px;
-    width: 100%;
-    margin: 20px auto;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    text-align: center;
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+  min-height: 100vh;
+  padding-top: 110px;
 }
 
 h1 {
-    color: #b008da;
-    margin-bottom: 20px;
-    font-size: 1.8em;
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #0a0a0a;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-top: 20px;
+  color: #4f4f4f;
+  text-align: center;
+}
+
+/* Cabeçalho moderno */
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #000;
+  padding: 10px 20px;
+  height: 100px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 999;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Menu */
+.menu {
+  display: flex;
+  gap: 24px;
+}
+footer {
+  background-color: #0a0a0a;
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+  color: #ffffff;
+  margin-top: auto;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.menu a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+  font-size: 1rem;
+}
+
+.menu a:hover {
+  color: #e1cfa5;
+}
+
+/* Menu Toggle (Hamburguer) */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.menu-toggle span {
+  width: 30px;
+  height: 4px;
+  background-color: white;
+  border-radius: 2px;
+}
+
+/* Container das seções */
+.container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 32px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grupos de input */
+.input-group {
+  margin-bottom: 20px;
 }
 
 label {
-    margin-top: 15px;
-    display: block;
-    font-weight: bold;
-    color: #fff;
-    text-align: left;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
 }
 
-input {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin: 10px 0;
-    border: 2px solid #b008da;
-    border-radius: 10px;
-    background-color: #333;
-    color: #fff;
-    transition: border-color 0.3s;
-    font-size: 1.1em;
+input[type="time"],
+input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
 }
 
-input:focus {
-    border-color: #b008da;
-    outline: none;
-}
-
+/* Botões */
 button {
-    width: 100%;
-    padding: 15px;
-    background: #b008da;
-    color: #000;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1.2em;
-    transition: background-color 0.3s;
+  background-color: #e1cfa5;
+  color: #0a0a0a;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-block;
+  margin-top: 10px;
 }
 
 button:hover {
-    background: #b008da;
+  background-color: #d6b36a;
+  transform: translateY(-2px);
 }
 
 button.limpar {
-    width: auto; 
-    padding: 10px 20px; 
-    margin-top: 10px; 
+  background-color: #c0392b;
+  color: white;
+  margin-left: 10px;
 }
 
-#saida, #resultado-extras, #resultado-registro {
-    margin-top: 20px;
-    font-size: 1.2em;
-    color: #d32f2f;
+button.limpar:hover {
+  background-color: #a93226;
 }
 
+/* Resultado */
+#saida,
+#resultado-extras,
+#resultado-registro {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #0a0a0a;
+  text-align: center;
+}
 
+/* Tabela de calendário */
 #calendario {
-    margin: 20px auto;
-    text-align: center;
+  margin-top: 20px;
+  overflow-x: auto;
 }
 
-#calendario table {
-    width: 100%;
-    border-collapse: collapse;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
 }
 
-#calendario th, #calendario td {
-    border: 1px solid #b008da; 
-    padding: 10px;
-    font-size: 1.2em;
-    cursor: pointer;
-    background-color: #f8f9fa; 
-    transition: background-color 0.3s; 
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
-#calendario th {
-    background-color: #b008da; 
-    color: #ffffff; 
-
-#calendario td:hover {
-    background-color: rgba(176, 8, 218, 0.3); 
+td:hover {
+  background-color: #f1f1f1;
 }
 
-#calendario td[data-dia="destacado"] {
-    background-color: #b008da; 
-    color: #ffffff; 
+td.selected {
+  background-color: #e1cfa5 !important;
+  color: #0a0a0a;
+  font-weight: bold;
 }
 
+/* Grupo de botões */
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
+  .cabecalho {
+    flex-direction: column;
+    height: auto;
+    padding: 16px;
+    gap: 12px;
+    align-items: center;
+  }
 
-    .container {
-        padding: 20px;
-    }
+  .menu-toggle {
+    display: flex;
+  }
 
-    h1 {
-        font-size: 1.5em;
-    }
+  .menu {
+    display: none; /* Mantém o menu escondido por padrão */
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 10px;
+  }
 
-    input, button {
-        font-size: 1em;
-        padding: 12px;
-    }
+  .menu.active {
+    display: flex; /* Exibe o menu quando a classe "active" é adicionada */
+  }
+
+  .menu a {
+    font-size: 1rem;
+    padding: 8px 0;
+    width: 100%;
+    text-align: center;
+    background-color: #111;
+    border-radius: 8px;
+  }
+
+  .container {
+    width: 95%;
+    margin: 20px auto;
+    padding: 20px;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-img {
+    height: 60px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1rem;
+  }
+
+  button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .menu a {
+    font-size: 0.95rem;
+  }
+  /* Menu hamburguer e responsividade */
+  .menu {
+    display: none; /* Mantém o menu escondido por padrão */
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .menu.active {
+    display: flex; /* Exibe o menu quando a classe "active" é adicionada */
+  }
 }
