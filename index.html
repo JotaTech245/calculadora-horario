@@ -1,92 +1,117 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Horários</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora de Horários</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <input type="checkbox" id="menu-checkbox" class="menu-checkbox">
-    <div class="menu-toggle">
-        <label for="menu-checkbox" class="menu-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-        </label>
+
+  <!-- Cabeçalho estilo Gilvan Reformas -->
+  <header class="cabecalho">
+    <div class="logo">
+      <img src="imagens/logo.png" alt="Logo" class="logo-img" />
     </div>
-    
+
+    <!-- Menu Toggle (Hamburguer) -->
+<div class="menu-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  
+      
+    <!-- Menu -->
     <nav class="menu">
-        <ul>
-            <li><a href="javascript:void(0)" onclick="mostrarCalculadora('saida')">🕒</a></li>
-            <li><a href="javascript:void(0)" onclick="mostrarCalculadora('extras')">💰</a></li>
-            <li><a href="javascript:void(0)" onclick="mostrarCalculadora('registro')">📅</a></li>
-        </ul>
+      <a href="javascript:void(0)" onclick="mostrarCalculadora('saida')">Saída</a>
+      <a href="javascript:void(0)" onclick="mostrarCalculadora('extras')">Horas Extras</a>
+      <a href="javascript:void(0)" onclick="mostrarCalculadora('registro')">Registro</a>
     </nav>
+  </header>
 
-    <div class="container" id="calculadora-saida">
-        <h1>Calculadora de Horário de Saída</h1>
+  <!-- Calculadora de Horário de Saída -->
+  <main class="container" id="calculadora-saida">
+    <form>
+      <div class="input-group">
         <label for="entrada">Horário de Entrada (HH:mm):</label>
-        <input type="time" id="entrada" required>
+        <input type="time" id="entrada" required />
+      </div>
 
+      <div class="input-group">
         <label for="horasTrabalho">Tempo de Trabalho (horas):</label>
-        <input type="number" id="horasTrabalho" required>
+        <input type="number" id="horasTrabalho" required />
+      </div>
 
+      <div class="input-group">
         <label for="minutosAlmoco">Tempo de Almoço (minutos):</label>
-        <input type="number" id="minutosAlmoco" required>
+        <input type="number" id="minutosAlmoco" required />
+      </div>
 
-        <button onclick="calcularSaida()">Calcular Horário de Saída</button>
+      <button type="button" onclick="calcularSaida()">Calcular Horário de Saída</button>
+    </form>
 
-        <h2 id="saida"></h2>
-    </div>
+    <h2 id="saida"></h2>
+  </main>
 
-    <div class="container" id="calculadora-extras" style="display: none;">
-        <h1>Calculadora de Horas Extras</h1>
+  <!-- Calculadora de Horas Extras -->
+  <main class="container" id="calculadora-extras" style="display: none;">
+    <h1>Calculadora de Horas Extras</h1>
+    <form>
+      <div class="input-group">
         <label for="salarioMensal">Salário Mensal (R$):</label>
-        <input type="number" id="salarioMensal" required>
+        <input type="number" id="salarioMensal" required />
+      </div>
 
+      <div class="input-group">
         <label for="horasTrabalhadas">Horas Trabalhadas por Dia:</label>
-        <input type="number" id="horasTrabalhadas" required>
+        <input type="number" id="horasTrabalhadas" required />
+      </div>
 
+      <div class="input-group">
         <label for="horasExtrasMes">Horas Extras no Mês:</label>
-        <input type="number" id="horasExtrasMes" required>
+        <input type="number" id="horasExtrasMes" required />
+      </div>
 
-        <button onclick="calcularExtras()">Calcular Ganho com Horas Extras</button>
+      <button type="button" onclick="calcularExtras()">Calcular Ganho com Horas Extras</button>
+    </form>
 
-        <h2 id="resultado-extras"></h2>
+    <h2 id="resultado-extras"></h2>
+  </main>
+
+  <!-- Registro de Horas Extras -->
+  <main class="container" id="calculadora-registro" style="display: none;">
+    <h1>Registro de Horas Extras</h1>
+
+    <div id="calendario">
+      <table>
+        <thead>
+          <tr>
+            <th>D</th><th>S</th><th>T</th><th>Q</th><th>Q</th><th>S</th><th>S</th>
+          </tr>
+        </thead>
+        <tbody id="corpoCalendario">
+          <!-- Preenchido via JS -->
+        </tbody>
+      </table>
     </div>
 
-    <div class="container" id="calculadora-registro" style="display: none;">
-        <h1>Registro de Horas Extras</h1>
-
-        <div id="calendario">
-            <table>
-                <thead>
-                    <tr>
-                        <th>D</th>
-                        <th>S</th>
-                        <th>T</th>
-                        <th>Q</th>
-                        <th>Q</th>
-                        <th>S</th>
-                        <th>S</th>
-                    </tr>
-                </thead>
-                <tbody id="corpoCalendario">
-                    <!-- Linhas do calendário geradas dinamicamente -->
-                </tbody>
-            </table>
-        </div>
-
-        <label for="horasExtras">Horas Extras Feitas:</label>
-        <input type="number" step="0.1" id="horasExtras" required>
-
-        <button onclick="salvarHistorico()">Registrar Horas Extras</button>
-        <button class="limpar" onclick="limparHistorico()">Limpar Histórico</button>
-
-        <h2 id="resultado-registro"></h2>
+    <div class="input-group">
+      <label for="horasExtras">Horas Extras Feitas:</label>
+      <input type="number" step="0.1" id="horasExtras" required />
     </div>
-    
-    <script src="script.js"></script>
+
+    <div class="button-group">
+      <button type="button" onclick="salvarHistorico()">Registrar Horas Extras</button>
+      <button type="button" class="limpar" onclick="limparHistorico()">Limpar Histórico</button>
+    </div>
+
+    <h2 id="resultado-registro"></h2>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
+<footer>
+    © 2025 — Criado com amor, pixel por pixel, só para você, Samara ❤️
+  </footer>
