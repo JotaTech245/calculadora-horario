@@ -1,8 +1,24 @@
+// Espera o carregamento completo do DOM antes de executar qualquer código
+window.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const menu = document.querySelector('.menu');
+
+    if (menuToggle && menu) { // Garante que ambos os elementos existem no DOM
+        menuToggle.addEventListener('click', function() {
+            menu.classList.toggle('active'); // Alterna a classe 'active' para mostrar ou esconder o menu
+        });
+    } else {
+        console.log("Erro: Elemento '.menu-toggle' ou '.menu' não encontrado.");
+    }
+});
+
+// Função para calcular o horário de saída
 function calcularSaida() {
     const entrada = document.getElementById('entrada').value;
     const horasTrabalho = parseInt(document.getElementById('horasTrabalho').value);
     const minutosAlmoco = parseInt(document.getElementById('minutosAlmoco').value);
 
+    // Validação de campos
     if (!entrada || isNaN(horasTrabalho) || isNaN(minutosAlmoco)) {
         alert("Por favor, preencha todos os campos corretamente.");
         return;
@@ -22,34 +38,33 @@ function calcularSaida() {
     document.getElementById('saida').innerText = `Você deve sair às: ${horarioSaida}`;
 }
 
+// Função para alternar entre as calculadoras
 function mostrarCalculadora(calculadora) {
-    const calculadoraSaida = document.getElementById('calculadora-saida');
-    const calculadoraExtras = document.getElementById('calculadora-extras');
-    const calculadoraRegistro = document.getElementById('calculadora-registro');
-    const menuCheckbox = document.getElementById('menu-checkbox');
+    const calculadoras = {
+        'saida': document.getElementById('calculadora-saida'),
+        'extras': document.getElementById('calculadora-extras'),
+        'registro': document.getElementById('calculadora-registro')
+    };
 
-    calculadoraSaida.style.display = 'none';
-    calculadoraExtras.style.display = 'none';
-    calculadoraRegistro.style.display = 'none';
+    // Esconde todas as calculadoras
+    Object.values(calculadoras).forEach(calc => calc.style.display = 'none');
 
-    if (calculadora === 'saida') {
-        calculadoraSaida.style.display = 'block';
-    } else if (calculadora === 'extras') {
-        calculadoraExtras.style.display = 'block';
-    } else {
-        calculadoraRegistro.style.display = 'block';
+    // Exibe a calculadora correspondente
+    calculadoras[calculadora].style.display = 'block';
+
+    // Gera o calendário se for a calculadora de registro
+    if (calculadora === 'registro') {
         gerarCalendario(new Date().getMonth(), new Date().getFullYear());
     }
-
-    // Fecha o menu após a seleção
-    menuCheckbox.checked = false;
 }
 
+// Função para calcular horas extras
 function calcularExtras() {
     const salarioMensal = parseFloat(document.getElementById('salarioMensal').value);
     const horasTrabalhadas = parseInt(document.getElementById('horasTrabalhadas').value);
     const horasExtrasMes = parseInt(document.getElementById('horasExtrasMes').value);
 
+    // Validação de campos
     if (isNaN(salarioMensal) || isNaN(horasTrabalhadas) || isNaN(horasExtrasMes)) {
         alert("Por favor, preencha todos os campos corretamente.");
         return;
@@ -62,6 +77,7 @@ function calcularExtras() {
     document.getElementById('resultado-extras').innerText = `Você deve receber R$ ${ganhoExtras.toFixed(2)} em horas extras no mês.`;
 }
 
+// Função para salvar o histórico de horas extras
 function salvarHistorico() {
     const diaSelecionado = document.querySelector('#corpoCalendario td[style*="background-color"]');
     
@@ -80,12 +96,15 @@ function salvarHistorico() {
 
     const registro = { data, horasExtras };
 
+    // Recupera o histórico ou inicializa um novo array
     let historico = JSON.parse(localStorage.getItem('historicoHorasExtras')) || [];
     historico.push(registro);
     localStorage.setItem('historicoHorasExtras', JSON.stringify(historico));
+
     exibirHorasExtras(data);
 }
 
+// Função para exibir as horas extras de um dia específico
 function exibirHorasExtras(dia) {
     const historico = JSON.parse(localStorage.getItem('historicoHorasExtras')) || [];
     const horasExtrasDia = historico.find(item => item.data === dia);
@@ -96,11 +115,13 @@ function exibirHorasExtras(dia) {
         : "Nenhum registro para esta data.";
 }
 
+// Função para limpar o histórico de horas extras
 function limparHistorico() {
     localStorage.removeItem('historicoHorasExtras');
     mostrarHistorico(); // Atualiza a interface após limpar
 }
 
+// Função para gerar o calendário
 function gerarCalendario(mes, ano) {
     const corpoCalendario = document.getElementById('corpoCalendario');
     corpoCalendario.innerHTML = '';
@@ -112,6 +133,7 @@ function gerarCalendario(mes, ano) {
 
     let diaAtual = 1;
 
+    // Gera o calendário mês a mês
     for (let i = 0; i < 6; i++) {
         const linha = document.createElement('tr');
 
@@ -125,12 +147,13 @@ function gerarCalendario(mes, ano) {
                 celula.textContent = diaAtual;
                 celula.setAttribute('data-dia', `${ano}-${mes + 1}-${diaAtual}`);
 
+                // Seleciona a data ao clicar
                 celula.onclick = function() {
                     document.querySelectorAll('#corpoCalendario td').forEach(function(td) {
                         td.style.backgroundColor = '';
                     });
 
-                    celula.style.backgroundColor = '#b008da';
+                    celula.style.backgroundColor = '#ffb347';
                     exibirHorasExtras(celula.getAttribute('data-dia'));
                 };
 
