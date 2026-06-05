@@ -49,12 +49,12 @@ test('mantém chaves de data com zero à esquerda', () => {
 
 test('normaliza perfil com padrões úteis', () => {
   const profile = context.normalizeProfile({
-    name: ' Samara ',
+    name: ' Maria Silva ',
     workHours: '7.5',
     salary: '2200'
   });
 
-  assert.equal(profile.name, 'Samara');
+  assert.equal(profile.name, 'Maria Silva');
   assert.equal(profile.workHours, 7.5);
   assert.equal(profile.salary, 2200);
 });

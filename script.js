@@ -1,6 +1,7 @@
 const STORAGE_KEY = 'historicoHorasExtrasV3';
 const PROFILE_STORAGE_KEY = 'calculadoraPerfilV1';
 const LEGACY_STORAGE_KEYS = ['historicoHorasExtrasV2', 'historicoHorasExtras'];
+const SYNC_TIMEOUT_MS = 8000;
 
 const EMPTY_PROFILE = {
   name: '',
@@ -20,7 +21,8 @@ const state = {
   supabaseClient: null,
   currentUser: null,
   remoteReady: false,
-  syncMode: 'local'
+  syncMode: 'local',
+  syncTimer: null
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -683,36 +685,52 @@ async function hydrateRemoteHistory() {
     return;
   }
 
-  setSyncStatus('Sincronizando...');
+  beginSyncStatus();
 
-  const localHistory = loadLocalHistory();
-  const remoteHistory = await fetchRemoteHistory();
+  try {
+    const localHistory = loadLocalHistory();
+    const remoteHistory = await withTimeout(
+      fetchRemoteHistory(),
+      SYNC_TIMEOUT_MS,
+      'Tempo esgotado ao carregar registros.'
+    );
 
-  if (!remoteHistory) {
-    state.history = localHistory;
-    setSyncStatus('Modo local');
-    return;
+    if (!remoteHistory) {
+      state.history = localHistory;
+      finishSyncStatus(cloudStatusLabel());
+      renderCalendar();
+      renderSelectedDate();
+      renderMonthTotal();
+      return;
+    }
+
+    const missingLocalEntries = Object.entries(localHistory)
+      .filter(([dateKey]) => !remoteHistory[dateKey])
+      .map(([dateKey, entry]) => [dateKey, normalizeEntry(entry)])
+      .filter(([, entry]) => entry);
+
+    if (missingLocalEntries.length > 0) {
+      await withTimeout(
+        upsertRemoteEntries(missingLocalEntries),
+        SYNC_TIMEOUT_MS,
+        'Tempo esgotado ao enviar registros locais.'
+      );
+    }
+
+    state.history = {
+      ...localHistory,
+      ...remoteHistory
+    };
+
+    saveLocalHistory();
+    finishSyncStatus(cloudStatusLabel());
+    renderCalendar();
+    renderSelectedDate();
+    renderMonthTotal();
+  } catch (error) {
+    finishSyncStatus(cloudStatusLabel());
+    setRegistroMessage(`Não foi possível sincronizar agora: ${error.message}`);
   }
-
-  const missingLocalEntries = Object.entries(localHistory)
-    .filter(([dateKey]) => !remoteHistory[dateKey])
-    .map(([dateKey, entry]) => [dateKey, normalizeEntry(entry)])
-    .filter(([, entry]) => entry);
-
-  if (missingLocalEntries.length > 0) {
-    await upsertRemoteEntries(missingLocalEntries);
-  }
-
-  state.history = {
-    ...localHistory,
-    ...remoteHistory
-  };
-
-  saveLocalHistory();
-  setSyncStatus(`Nuvem: ${state.currentUser.email}`);
-  renderCalendar();
-  renderSelectedDate();
-  renderMonthTotal();
 }
 
 async function fetchRemoteHistory() {
@@ -934,6 +952,44 @@ function setProfileMessage(message) {
 
 function setSyncStatus(message) {
   document.getElementById('syncStatus').textContent = message;
+}
+
+function beginSyncStatus() {
+  clearSyncTimer();
+  setSyncStatus('Sincronizando...');
+
+  state.syncTimer = setTimeout(() => {
+    if (isCloudSessionReady()) {
+      setSyncStatus(cloudStatusLabel());
+    }
+  }, SYNC_TIMEOUT_MS);
+}
+
+function finishSyncStatus(message) {
+  clearSyncTimer();
+  setSyncStatus(message);
+}
+
+function clearSyncTimer() {
+  if (state.syncTimer) {
+    clearTimeout(state.syncTimer);
+    state.syncTimer = null;
+  }
+}
+
+function cloudStatusLabel() {
+  return state.currentUser?.email ? `Nuvem: ${state.currentUser.email}` : 'Nuvem conectada';
+}
+
+function withTimeout(promise, timeoutMs, message) {
+  let timeoutId;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    clearTimeout(timeoutId);
+  });
 }
 
 function loadLocalProfile() {
