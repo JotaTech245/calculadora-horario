@@ -152,11 +152,13 @@ async function restoreSession() {
 }
 
 function bindAuth() {
-  const authForm = document.getElementById('auth-form');
-  const signupButton = document.getElementById('signupButton');
+  const signinForm = document.getElementById('signin-form');
+  const signupForm = document.getElementById('signup-form');
+  const showSignupButton = document.getElementById('showSignupButton');
+  const showSigninButton = document.getElementById('showSigninButton');
   const logoutButton = document.getElementById('logoutButton');
 
-  authForm.addEventListener('submit', async (event) => {
+  signinForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (!state.remoteReady) {
@@ -167,7 +169,9 @@ function bindAuth() {
     await signIn();
   });
 
-  signupButton.addEventListener('click', async () => {
+  signupForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
     if (!state.remoteReady) {
       setAuthMessage('Configure o Supabase antes de criar uma conta.');
       return;
@@ -175,6 +179,9 @@ function bindAuth() {
 
     await signUp();
   });
+
+  showSignupButton.addEventListener('click', () => showAuthPanel('signup'));
+  showSigninButton.addEventListener('click', () => showAuthPanel('signin'));
 
   logoutButton.addEventListener('click', async () => {
     if (!state.supabaseClient) {
@@ -193,8 +200,8 @@ function bindAuth() {
 }
 
 async function signIn() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
+  const email = document.getElementById('signinEmail').value.trim();
+  const password = document.getElementById('signinPassword').value;
 
   setAuthMessage('Entrando...');
 
@@ -216,14 +223,20 @@ async function signIn() {
 }
 
 async function signUp() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
 
   setAuthMessage('Criando conta...');
 
   const { data, error } = await state.supabaseClient.auth.signUp({
     email,
-    password
+    password,
+    options: {
+      data: {
+        display_name: name
+      }
+    }
   });
 
   if (error) {
@@ -233,19 +246,34 @@ async function signUp() {
 
   if (data.session) {
     state.currentUser = data.user;
+    state.profile = normalizeProfile({
+      ...state.profile,
+      name
+    });
+    saveLocalProfile();
     setAuthMessage('');
     updateAuthUI();
+    await persistRemoteProfile({ quiet: true });
     await hydrateRemoteHistory();
     await hydrateRemoteProfile();
     return;
   }
 
+  state.profile = normalizeProfile({
+    ...state.profile,
+    name
+  });
+  saveLocalProfile();
   setAuthMessage('Conta criada. Confirme o e-mail para entrar.');
+  showAuthPanel('signin');
 }
 
 function updateAuthUI() {
   const authShell = document.getElementById('authShell');
   const appShell = document.querySelector('.app-shell');
+  const mainMenu = document.getElementById('mainMenu');
+  const accountBar = document.getElementById('accountBar');
+  const menuToggle = document.querySelector('.menu-toggle');
   const setupNotice = document.getElementById('setupNotice');
   const logoutButton = document.getElementById('logoutButton');
   const profileButton = document.getElementById('accountProfileButton');
@@ -253,6 +281,10 @@ function updateAuthUI() {
 
   authShell.hidden = !needsLogin;
   appShell.hidden = needsLogin;
+  document.body.classList.toggle('auth-mode', needsLogin);
+  mainMenu.hidden = needsLogin;
+  accountBar.hidden = needsLogin;
+  menuToggle.hidden = needsLogin;
   setupNotice.hidden = state.remoteReady;
   logoutButton.hidden = !state.currentUser;
   profileButton.hidden = !(state.currentUser || state.profile.name || state.profile.avatarUrl);
@@ -261,10 +293,17 @@ function updateAuthUI() {
   if (!state.remoteReady) {
     setSyncStatus('Modo local');
   } else if (state.currentUser) {
-    setSyncStatus(`Nuvem: ${state.currentUser.email}`);
+    setSyncStatus(cloudStatusLabel());
   } else {
     setSyncStatus('Login necessário');
   }
+}
+
+function showAuthPanel(panelName) {
+  const showSignup = panelName === 'signup';
+  document.getElementById('signinPanel').hidden = showSignup;
+  document.getElementById('signupPanel').hidden = !showSignup;
+  setAuthMessage('');
 }
 
 function bindNavigation() {
@@ -613,6 +652,7 @@ async function hydrateRemoteProfile() {
   saveLocalProfile();
   renderProfileForm();
   applyProfileDefaults({ silent: true });
+  finishSyncStatus(cloudStatusLabel());
   updateAuthUI();
 }
 
@@ -978,7 +1018,17 @@ function clearSyncTimer() {
 }
 
 function cloudStatusLabel() {
-  return state.currentUser?.email ? `Nuvem: ${state.currentUser.email}` : 'Nuvem conectada';
+  return formatAccountLabel(state.profile, state.currentUser);
+}
+
+function formatAccountLabel(profile, user) {
+  const profileName = normalizeProfile(profile).name;
+
+  if (profileName) {
+    return profileName;
+  }
+
+  return user?.email ? user.email : 'Nuvem conectada';
 }
 
 function withTimeout(promise, timeoutMs, message) {

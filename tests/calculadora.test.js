@@ -58,3 +58,13 @@ test('normaliza perfil com padrões úteis', () => {
   assert.equal(profile.workHours, 7.5);
   assert.equal(profile.salary, 2200);
 });
+
+test('usa nome do perfil no status da conta', () => {
+  assert.equal(
+    context.formatAccountLabel(
+      context.normalizeProfile({ name: 'Maria Silva' }),
+      { email: 'maria.silva@example.com' }
+    ),
+    'Maria Silva'
+  );
+});

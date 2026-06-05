@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#080808" />
   <title>Calculadora de Horários</title>
-  <link rel="stylesheet" href="styles.css?v=3.3" />
+  <link rel="stylesheet" href="styles.css?v=3.4" />
 </head>
 <body>
   <header class="app-header">
@@ -19,14 +19,14 @@
       <span></span>
     </button>
 
-    <nav class="menu" aria-label="Calculadoras">
+    <nav class="menu" id="mainMenu" aria-label="Calculadoras" hidden>
       <button class="menu-item active" type="button" data-tab="saida">Saída</button>
       <button class="menu-item" type="button" data-tab="extras">Horas Extras</button>
       <button class="menu-item" type="button" data-tab="registro">Registro</button>
       <button class="menu-item" type="button" data-tab="perfil">Perfil</button>
     </nav>
 
-    <div class="account-bar" aria-live="polite">
+    <div class="account-bar" id="accountBar" aria-live="polite" hidden>
       <button class="account-profile" type="button" data-tab="perfil" id="accountProfileButton" hidden>
         <span class="account-avatar" id="accountAvatar">?</span>
       </button>
@@ -37,24 +37,60 @@
 
   <section class="auth-shell" id="authShell" hidden>
     <div class="auth-card">
-      <p class="eyebrow">Conta</p>
-      <h1>Entrar na Calculadora</h1>
-      <p class="auth-copy">Use e-mail e senha para salvar os registros no celular e no computador.</p>
+      <div class="auth-panel" id="signinPanel">
+        <p class="eyebrow">Conta</p>
+        <h1>Entrar</h1>
+        <p class="auth-copy">Acesse seus registros de horas no celular e no computador.</p>
 
-      <form class="auth-form" id="auth-form">
-        <div class="input-group">
-          <label for="authEmail">E-mail</label>
-          <input type="email" id="authEmail" autocomplete="email" required />
+        <form class="auth-form" id="signin-form">
+          <div class="input-group">
+            <label for="signinEmail">E-mail</label>
+            <input type="email" id="signinEmail" autocomplete="email" required />
+          </div>
+
+          <div class="input-group">
+            <label for="signinPassword">Senha</label>
+            <input type="password" id="signinPassword" autocomplete="current-password" minlength="6" required />
+          </div>
+
+          <button class="primary-action" type="submit">Entrar</button>
+        </form>
+
+        <div class="auth-switch">
+          <span>Ainda não tem conta?</span>
+          <button type="button" id="showSignupButton">Criar conta</button>
         </div>
+      </div>
 
-        <div class="input-group">
-          <label for="authPassword">Senha</label>
-          <input type="password" id="authPassword" autocomplete="current-password" minlength="6" required />
+      <div class="auth-panel" id="signupPanel" hidden>
+        <p class="eyebrow">Nova conta</p>
+        <h1>Criar conta</h1>
+        <p class="auth-copy">Preencha o básico para começar a salvar seus registros.</p>
+
+        <form class="auth-form" id="signup-form">
+          <div class="input-group">
+            <label for="signupName">Nome completo</label>
+            <input type="text" id="signupName" autocomplete="name" placeholder="Digite o nome completo" required />
+          </div>
+
+          <div class="input-group">
+            <label for="signupEmail">E-mail</label>
+            <input type="email" id="signupEmail" autocomplete="email" required />
+          </div>
+
+          <div class="input-group">
+            <label for="signupPassword">Senha</label>
+            <input type="password" id="signupPassword" autocomplete="new-password" minlength="6" required />
+          </div>
+
+          <button class="primary-action" type="submit">Criar conta</button>
+        </form>
+
+        <div class="auth-switch">
+          <span>Já tem uma conta?</span>
+          <button type="button" id="showSigninButton">Entrar</button>
         </div>
-
-        <button class="primary-action" type="submit">Entrar</button>
-        <button class="secondary-action" type="button" id="signupButton">Criar conta</button>
-      </form>
+      </div>
 
       <p class="auth-message" id="authMessage" role="status"></p>
     </div>
@@ -280,6 +316,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=1.0"></script>
-  <script src="script.js?v=3.3"></script>
+  <script src="script.js?v=3.4"></script>
 </body>
 </html>

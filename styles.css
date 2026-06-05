@@ -58,6 +58,10 @@ button {
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.2);
 }
 
+.auth-mode .app-header {
+  justify-content: center;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -170,8 +174,8 @@ button {
 }
 
 .auth-shell {
-  width: min(560px, calc(100% - 32px));
-  margin: 42px auto;
+  width: min(720px, calc(100% - 32px));
+  margin: 64px auto;
 }
 
 .auth-card,
@@ -183,7 +187,7 @@ button {
 }
 
 .auth-card {
-  padding: clamp(24px, 4vw, 38px);
+  padding: clamp(28px, 5vw, 56px);
 }
 
 .auth-card h1 {
@@ -213,6 +217,27 @@ button {
   margin: 16px 0 0;
   color: var(--brand-strong);
   font-weight: 700;
+}
+
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 18px;
+  color: var(--muted);
+}
+
+.auth-switch button {
+  padding: 0;
+  color: var(--brand-strong);
+  background: transparent;
+  border: 0;
+  font-weight: 800;
+}
+
+.auth-switch button:hover {
+  text-decoration: underline;
 }
 
 .app-shell {
