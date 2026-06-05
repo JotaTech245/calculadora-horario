@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#080808" />
   <title>Calculadora de Horários</title>
-  <link rel="stylesheet" href="styles.css?v=3.0" />
+  <link rel="stylesheet" href="styles.css?v=3.1" />
 </head>
 <body>
   <header class="app-header">
@@ -23,9 +23,13 @@
       <button class="menu-item active" type="button" data-tab="saida">Saída</button>
       <button class="menu-item" type="button" data-tab="extras">Horas Extras</button>
       <button class="menu-item" type="button" data-tab="registro">Registro</button>
+      <button class="menu-item" type="button" data-tab="perfil">Perfil</button>
     </nav>
 
     <div class="account-bar" aria-live="polite">
+      <button class="account-profile" type="button" data-tab="perfil" id="accountProfileButton" hidden>
+        <span class="account-avatar" id="accountAvatar">?</span>
+      </button>
       <span id="syncStatus">Modo local</span>
       <button class="logout-button" type="button" id="logoutButton" hidden>Sair</button>
     </div>
@@ -205,6 +209,82 @@
         </output>
       </div>
     </section>
+
+    <section class="panel" id="panel-perfil" data-panel="perfil" aria-labelledby="titulo-perfil" hidden>
+      <div class="panel-heading row-heading">
+        <div>
+          <p class="eyebrow">Dados pessoais</p>
+          <h1 id="titulo-perfil">Perfil</h1>
+        </div>
+        <div class="profile-preview">
+          <img id="profileAvatarPreview" alt="Foto do perfil" hidden />
+          <span id="profileInitials">?</span>
+        </div>
+      </div>
+
+      <form class="profile-grid" id="profile-form">
+        <div class="input-group wide-field">
+          <label for="profilePhoto">Foto</label>
+          <input type="file" id="profilePhoto" accept="image/*" />
+        </div>
+
+        <div class="input-group">
+          <label for="profileName">Nome</label>
+          <input type="text" id="profileName" autocomplete="name" placeholder="Samara" />
+        </div>
+
+        <div class="input-group">
+          <label for="profileRole">Cargo ou setor</label>
+          <input type="text" id="profileRole" placeholder="Atendimento, vendas..." />
+        </div>
+
+        <div class="input-group">
+          <label for="profileWorkHours">Jornada padrão</label>
+          <div class="inline-input">
+            <input type="number" id="profileWorkHours" min="0" step="0.25" inputmode="decimal" />
+            <span>horas</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="profileLunchMinutes">Intervalo padrão</label>
+          <div class="inline-input">
+            <input type="number" id="profileLunchMinutes" min="0" step="1" inputmode="numeric" />
+            <span>min</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="profileSalary">Salário mensal</label>
+          <div class="money-input">
+            <span>R$</span>
+            <input type="number" id="profileSalary" min="0" step="0.01" inputmode="decimal" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="profileMonthlyDivisor">Divisor mensal</label>
+          <input type="number" id="profileMonthlyDivisor" min="1" step="1" inputmode="numeric" />
+        </div>
+
+        <div class="input-group">
+          <label for="profileOvertimePercent">Adicional padrão</label>
+          <div class="inline-input">
+            <input type="number" id="profileOvertimePercent" min="0" step="1" inputmode="numeric" />
+            <span>%</span>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="primary-action" type="submit">Salvar perfil</button>
+          <button class="secondary-action" type="button" id="applyProfileDefaults">Aplicar padrões</button>
+        </div>
+      </form>
+
+      <output class="result-card" id="profileMessage" aria-live="polite">
+        Seus dados ajudam a preencher a calculadora mais rápido.
+      </output>
+    </section>
   </main>
 
   <footer class="app-footer">
@@ -213,6 +293,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=1.0"></script>
-  <script src="script.js?v=3.0"></script>
+  <script src="script.js?v=3.1"></script>
 </body>
 </html>

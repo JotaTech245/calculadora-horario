@@ -11,6 +11,7 @@ Site publicado: https://jotatech245.github.io/calculadora-horario/
 - Estima o valor de horas extras com divisor mensal e adicional configuráveis.
 - Registra horas extras por dia em calendário mensal.
 - Mostra o total de horas extras do mês.
+- Mantém um perfil com foto, cargo e padrões de jornada.
 - Salva os registros no navegador usando `localStorage`.
 
 ## Como rodar localmente
@@ -27,7 +28,7 @@ Esta versão corrige os cálculos com decimais, melhora o registro mensal, remov
 
 ## Supabase + Vercel
 
-A versão com login usa Supabase Auth e a tabela `overtime_entries` para sincronizar os registros entre celular e computador.
+A versão com login usa Supabase Auth e as tabelas `overtime_entries` e `profiles` para sincronizar os registros e dados básicos entre celular e computador.
 
 1. No Supabase, rode o SQL de `supabase/schema.sql`.
 2. No Vercel, adicione as variáveis de ambiente:
@@ -40,3 +41,5 @@ SUPABASE_ANON_KEY=sua-chave-anon-ou-publishable
 3. Faça um novo deploy.
 
 Nunca use a `service_role key` no frontend. A segurança dos registros depende das políticas RLS do arquivo SQL.
+
+A foto do perfil é reduzida no navegador antes de salvar para evitar imagens grandes no banco.

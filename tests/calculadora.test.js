@@ -46,3 +46,17 @@ test('mantém chaves de data com zero à esquerda', () => {
   assert.equal(context.toDateKey(2026, 5, 5), '2026-06-05');
   assert.equal(context.normalizeDateKey('2026-6-5'), '2026-06-05');
 });
+
+test('normaliza perfil com padrões úteis', () => {
+  const profile = context.normalizeProfile({
+    name: ' Samara ',
+    workHours: '7.5',
+    monthlyDivisor: '',
+    overtimePercent: ''
+  });
+
+  assert.equal(profile.name, 'Samara');
+  assert.equal(profile.workHours, 7.5);
+  assert.equal(profile.monthlyDivisor, 220);
+  assert.equal(profile.overtimePercent, 50);
+});

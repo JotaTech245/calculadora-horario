@@ -15,6 +15,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   min-height: 100%;
 }
@@ -122,6 +126,37 @@ button {
   max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.account-profile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  overflow: hidden;
+  background: #171717;
+  border: 1px solid rgba(196, 154, 58, 0.55);
+  border-radius: 999px;
+}
+
+.account-avatar,
+.profile-preview span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #171207;
+  background: var(--brand);
+  font-weight: 800;
+}
+
+.account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .logout-button {
@@ -252,6 +287,13 @@ button {
 .form-grid.compact {
   grid-template-columns: minmax(220px, 1fr) minmax(180px, auto);
   margin-top: 20px;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: end;
 }
 
 .input-group {
@@ -499,6 +541,27 @@ textarea:focus {
   grid-column: 1 / -1;
 }
 
+.profile-preview {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  overflow: hidden;
+  border: 3px solid rgba(196, 154, 58, 0.42);
+  border-radius: 999px;
+  background: #efe6d3;
+  box-shadow: 0 10px 24px rgba(34, 29, 22, 0.12);
+}
+
+.profile-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-preview span {
+  font-size: 2rem;
+}
+
 .summary-row {
   display: grid;
   grid-template-columns: 1fr minmax(180px, 0.45fr);
@@ -579,6 +642,7 @@ textarea:focus {
 
   .form-grid,
   .form-grid.compact,
+  .profile-grid,
   .summary-row {
     grid-template-columns: 1fr;
   }

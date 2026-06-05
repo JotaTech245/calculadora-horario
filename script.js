@@ -1,11 +1,24 @@
 const STORAGE_KEY = 'historicoHorasExtrasV3';
+const PROFILE_STORAGE_KEY = 'calculadoraPerfilV1';
 const LEGACY_STORAGE_KEYS = ['historicoHorasExtrasV2', 'historicoHorasExtras'];
+
+const EMPTY_PROFILE = {
+  name: '',
+  role: '',
+  avatarUrl: '',
+  workHours: null,
+  lunchMinutes: null,
+  salary: null,
+  monthlyDivisor: 220,
+  overtimePercent: 50
+};
 
 const state = {
   selectedTab: 'saida',
   calendarDate: new Date(),
   selectedDate: null,
   history: {},
+  profile: { ...EMPTY_PROFILE },
   supabaseClient: null,
   currentUser: null,
   remoteReady: false,
@@ -18,17 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeApp() {
   state.history = loadLocalHistory();
+  state.profile = loadLocalProfile();
 
   bindNavigation();
   bindAuth();
   bindSaidaForm();
   bindExtrasForm();
   bindRegistroForm();
+  bindProfileForm();
   await initSupabaseClient();
 
   renderCalendar();
   renderSelectedDate();
   renderMonthTotal();
+  renderProfileForm();
+  applyProfileDefaults({ silent: true });
   updateAuthUI();
 
   if (state.remoteReady) {
@@ -54,11 +71,14 @@ async function initSupabaseClient() {
 
     if (state.currentUser) {
       await hydrateRemoteHistory();
+      await hydrateRemoteProfile();
     } else {
       state.history = loadLocalHistory();
+      state.profile = loadLocalProfile();
       renderCalendar();
       renderSelectedDate();
       renderMonthTotal();
+      renderProfileForm();
     }
   });
 }
@@ -125,6 +145,7 @@ async function restoreSession() {
 
   if (state.currentUser) {
     await hydrateRemoteHistory();
+    await hydrateRemoteProfile();
   } else {
     setSyncStatus('Login necessário');
   }
@@ -163,8 +184,10 @@ function bindAuth() {
     await state.supabaseClient.auth.signOut();
     state.currentUser = null;
     state.syncMode = 'local';
+    state.profile = loadLocalProfile();
     setAuthMessage('');
     setSyncStatus('Modo local');
+    renderProfileForm();
     updateAuthUI();
   });
 }
@@ -189,6 +212,7 @@ async function signIn() {
   setAuthMessage('');
   updateAuthUI();
   await hydrateRemoteHistory();
+  await hydrateRemoteProfile();
 }
 
 async function signUp() {
@@ -212,6 +236,7 @@ async function signUp() {
     setAuthMessage('');
     updateAuthUI();
     await hydrateRemoteHistory();
+    await hydrateRemoteProfile();
     return;
   }
 
@@ -223,12 +248,15 @@ function updateAuthUI() {
   const appShell = document.querySelector('.app-shell');
   const setupNotice = document.getElementById('setupNotice');
   const logoutButton = document.getElementById('logoutButton');
+  const profileButton = document.getElementById('accountProfileButton');
   const needsLogin = state.remoteReady && !state.currentUser;
 
   authShell.hidden = !needsLogin;
   appShell.hidden = needsLogin;
   setupNotice.hidden = state.remoteReady;
   logoutButton.hidden = !state.currentUser;
+  profileButton.hidden = !(state.currentUser || state.profile.name || state.profile.avatarUrl);
+  renderProfileAvatar();
 
   if (!state.remoteReady) {
     setSyncStatus('Modo local');
@@ -274,6 +302,10 @@ function showTab(tabName) {
     renderCalendar();
     renderSelectedDate();
     renderMonthTotal();
+  }
+
+  if (tabName === 'perfil') {
+    renderProfileForm();
   }
 }
 
@@ -436,6 +468,223 @@ function bindRegistroForm() {
     renderCalendar();
     renderSelectedDate();
     renderMonthTotal();
+  });
+}
+
+function bindProfileForm() {
+  document.getElementById('profile-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    state.profile = readProfileForm();
+    saveLocalProfile();
+    renderProfileForm();
+    applyProfileDefaults({ silent: true });
+
+    await persistRemoteProfile();
+  });
+
+  document.getElementById('profilePhoto').addEventListener('change', async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setProfileMessage('Escolha uma imagem válida.');
+      return;
+    }
+
+    try {
+      setProfileMessage('Preparando foto...');
+      state.profile.avatarUrl = await resizeAvatarFile(file);
+      saveLocalProfile();
+      renderProfileAvatar();
+      renderProfileForm();
+      setProfileMessage('Foto pronta. Salve o perfil para sincronizar.');
+    } catch (error) {
+      setProfileMessage(error.message);
+    }
+  });
+
+  document.getElementById('applyProfileDefaults').addEventListener('click', () => {
+    applyProfileDefaults({ silent: false });
+  });
+}
+
+function readProfileForm() {
+  return normalizeProfile({
+    name: document.getElementById('profileName').value,
+    role: document.getElementById('profileRole').value,
+    avatarUrl: state.profile.avatarUrl,
+    workHours: readOptionalNumber('profileWorkHours'),
+    lunchMinutes: readOptionalNumber('profileLunchMinutes'),
+    salary: readOptionalNumber('profileSalary'),
+    monthlyDivisor: readOptionalNumber('profileMonthlyDivisor') || 220,
+    overtimePercent: readOptionalNumber('profileOvertimePercent') ?? 50
+  });
+}
+
+function renderProfileForm() {
+  const profile = normalizeProfile(state.profile);
+  state.profile = profile;
+
+  setInputValue('profileName', profile.name);
+  setInputValue('profileRole', profile.role);
+  setInputValue('profileWorkHours', profile.workHours);
+  setInputValue('profileLunchMinutes', profile.lunchMinutes);
+  setInputValue('profileSalary', profile.salary);
+  setInputValue('profileMonthlyDivisor', profile.monthlyDivisor);
+  setInputValue('profileOvertimePercent', profile.overtimePercent);
+  renderProfileAvatar();
+}
+
+function renderProfileAvatar() {
+  const profile = normalizeProfile(state.profile);
+  const preview = document.getElementById('profileAvatarPreview');
+  const initials = document.getElementById('profileInitials');
+  const accountAvatar = document.getElementById('accountAvatar');
+  const initialsText = getInitials(profile.name || state.currentUser?.email || '?');
+
+  initials.textContent = initialsText;
+  accountAvatar.innerHTML = '';
+  accountAvatar.textContent = initialsText;
+
+  if (profile.avatarUrl) {
+    preview.src = profile.avatarUrl;
+    preview.hidden = false;
+    initials.hidden = true;
+    accountAvatar.textContent = '';
+    const image = document.createElement('img');
+    image.src = profile.avatarUrl;
+    image.alt = '';
+    accountAvatar.appendChild(image);
+    return;
+  }
+
+  preview.removeAttribute('src');
+  preview.hidden = true;
+  initials.hidden = false;
+}
+
+function applyProfileDefaults({ silent } = { silent: false }) {
+  const profile = normalizeProfile(state.profile);
+
+  setInputValue('horasTrabalho', profile.workHours);
+  setInputValue('minutosAlmoco', profile.lunchMinutes);
+  setInputValue('salarioMensal', profile.salary);
+  setInputValue('divisorMensal', profile.monthlyDivisor);
+  setInputValue('adicionalExtra', profile.overtimePercent);
+
+  if (!silent) {
+    setProfileMessage('Padrões aplicados nas calculadoras.');
+  }
+}
+
+async function hydrateRemoteProfile() {
+  if (!isCloudSessionReady()) {
+    return;
+  }
+
+  const { data, error } = await state.supabaseClient
+    .from('profiles')
+    .select('display_name, role_title, avatar_url, default_work_hours, default_lunch_minutes, monthly_salary, monthly_divisor, overtime_percent')
+    .eq('id', state.currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    setProfileMessage(`Não foi possível carregar o perfil: ${error.message}`);
+    return;
+  }
+
+  if (data) {
+    state.profile = normalizeProfile({
+      name: data.display_name,
+      role: data.role_title,
+      avatarUrl: data.avatar_url,
+      workHours: data.default_work_hours,
+      lunchMinutes: data.default_lunch_minutes,
+      salary: data.monthly_salary,
+      monthlyDivisor: data.monthly_divisor,
+      overtimePercent: data.overtime_percent
+    });
+  } else {
+    state.profile = normalizeProfile({
+      ...loadLocalProfile(),
+      name: loadLocalProfile().name || getNameFromEmail(state.currentUser.email)
+    });
+    await persistRemoteProfile({ quiet: true });
+  }
+
+  saveLocalProfile();
+  renderProfileForm();
+  applyProfileDefaults({ silent: true });
+  updateAuthUI();
+}
+
+async function persistRemoteProfile({ quiet } = { quiet: false }) {
+  if (!isCloudSessionReady()) {
+    if (!quiet) {
+      setProfileMessage('Perfil salvo neste aparelho.');
+    }
+    return;
+  }
+
+  const { error } = await state.supabaseClient
+    .from('profiles')
+    .upsert(toRemoteProfilePayload(), { onConflict: 'id' });
+
+  if (error) {
+    setProfileMessage(`Perfil salvo localmente. Falha na nuvem: ${error.message}`);
+    return;
+  }
+
+  if (!quiet) {
+    setProfileMessage('Perfil salvo e sincronizado.');
+  }
+}
+
+function toRemoteProfilePayload() {
+  const profile = normalizeProfile(state.profile);
+
+  return {
+    id: state.currentUser.id,
+    display_name: profile.name || null,
+    role_title: profile.role || null,
+    avatar_url: profile.avatarUrl || null,
+    default_work_hours: profile.workHours,
+    default_lunch_minutes: profile.lunchMinutes,
+    monthly_salary: profile.salary,
+    monthly_divisor: profile.monthlyDivisor,
+    overtime_percent: profile.overtimePercent
+  };
+}
+
+function resizeAvatarFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const image = new Image();
+
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = 512;
+        const scale = Math.min(size / image.width, size / image.height, 1);
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+
+        const context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+
+      image.onerror = () => reject(new Error('Não foi possível carregar a imagem.'));
+      image.src = reader.result;
+    };
+
+    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+    reader.readAsDataURL(file);
   });
 }
 
@@ -689,8 +938,34 @@ function setAuthMessage(message) {
   document.getElementById('authMessage').textContent = message;
 }
 
+function setProfileMessage(message) {
+  document.getElementById('profileMessage').textContent = message;
+}
+
 function setSyncStatus(message) {
   document.getElementById('syncStatus').textContent = message;
+}
+
+function loadLocalProfile() {
+  const profile = parseStorage(PROFILE_STORAGE_KEY);
+  return normalizeProfile(profile || {});
+}
+
+function saveLocalProfile() {
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(normalizeProfile(state.profile)));
+}
+
+function normalizeProfile(profile) {
+  return {
+    name: String(profile?.name || '').trim(),
+    role: String(profile?.role || '').trim(),
+    avatarUrl: String(profile?.avatarUrl || '').trim(),
+    workHours: normalizeOptionalNumber(profile?.workHours),
+    lunchMinutes: normalizeOptionalNumber(profile?.lunchMinutes),
+    salary: normalizeOptionalNumber(profile?.salary),
+    monthlyDivisor: normalizeOptionalNumber(profile?.monthlyDivisor) || 220,
+    overtimePercent: normalizeOptionalNumber(profile?.overtimePercent) ?? 50
+  };
 }
 
 function loadLocalHistory() {
@@ -790,6 +1065,35 @@ function readNumber(id) {
   return Number(String(document.getElementById(id).value).replace(',', '.'));
 }
 
+function readOptionalNumber(id) {
+  const value = String(document.getElementById(id).value).trim();
+
+  if (!value) {
+    return null;
+  }
+
+  return normalizeOptionalNumber(value);
+}
+
+function normalizeOptionalNumber(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const number = Number(String(value).replace(',', '.'));
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+function setInputValue(id, value) {
+  const input = document.getElementById(id);
+
+  if (!input) {
+    return;
+  }
+
+  input.value = value === null || value === undefined ? '' : value;
+}
+
 function isValidNumber(value) {
   return Number.isFinite(value) && value >= 0;
 }
@@ -847,4 +1151,25 @@ function getNextMonthPrefix(monthPrefix) {
   const [year, month] = monthPrefix.split('-').map(Number);
   const date = new Date(year, month, 1);
   return getMonthPrefix(date);
+}
+
+function getInitials(text) {
+  const parts = String(text || '?')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return '?';
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+function getNameFromEmail(email) {
+  return String(email || '').split('@')[0] || '';
 }
