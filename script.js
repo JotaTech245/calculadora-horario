@@ -183,20 +183,39 @@ function bindAuth() {
   showSignupButton.addEventListener('click', () => showAuthPanel('signup'));
   showSigninButton.addEventListener('click', () => showAuthPanel('signin'));
 
-  logoutButton.addEventListener('click', async () => {
-    if (!state.supabaseClient) {
-      return;
-    }
+  logoutButton.addEventListener('click', handleLogout);
+}
 
-    await state.supabaseClient.auth.signOut();
-    state.currentUser = null;
-    state.syncMode = 'local';
-    state.profile = loadLocalProfile();
-    setAuthMessage('');
-    setSyncStatus('Modo local');
-    renderProfileForm();
-    updateAuthUI();
-  });
+async function handleLogout() {
+  const client = state.supabaseClient;
+
+  clearActiveSession();
+
+  if (!client) {
+    return;
+  }
+
+  try {
+    await withTimeout(
+      client.auth.signOut({ scope: 'local' }),
+      SYNC_TIMEOUT_MS,
+      'Tempo esgotado ao sair.'
+    );
+  } catch (error) {
+    setAuthMessage(`Sessão encerrada neste aparelho. ${error.message}`);
+  }
+}
+
+function clearActiveSession() {
+  clearSyncTimer();
+  state.currentUser = null;
+  state.syncMode = state.remoteReady ? 'cloud' : 'local';
+  state.profile = loadLocalProfile();
+  setAuthMessage('');
+  setSyncStatus(state.remoteReady ? 'Login necessário' : 'Modo local');
+  showAuthPanel('signin');
+  renderProfileForm();
+  updateAuthUI();
 }
 
 async function signIn() {
