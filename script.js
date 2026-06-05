@@ -1,23 +1,243 @@
-const STORAGE_KEY = 'historicoHorasExtrasV2';
-const OLD_STORAGE_KEY = 'historicoHorasExtras';
+const STORAGE_KEY = 'historicoHorasExtrasV3';
+const LEGACY_STORAGE_KEYS = ['historicoHorasExtrasV2', 'historicoHorasExtras'];
 
 const state = {
   selectedTab: 'saida',
   calendarDate: new Date(),
   selectedDate: null,
-  history: {}
+  history: {},
+  supabaseClient: null,
+  currentUser: null,
+  remoteReady: false,
+  syncMode: 'local'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  state.history = loadHistory();
+  initializeApp();
+});
+
+async function initializeApp() {
+  state.history = loadLocalHistory();
 
   bindNavigation();
+  bindAuth();
   bindSaidaForm();
   bindExtrasForm();
   bindRegistroForm();
+  await initSupabaseClient();
+
   renderCalendar();
+  renderSelectedDate();
   renderMonthTotal();
-});
+  updateAuthUI();
+
+  if (state.remoteReady) {
+    await restoreSession();
+  }
+}
+
+async function initSupabaseClient() {
+  const config = await getSupabaseConfig();
+
+  if (!config || !window.supabase) {
+    state.syncMode = 'local';
+    return;
+  }
+
+  state.supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+  state.remoteReady = true;
+  state.syncMode = 'cloud';
+
+  state.supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    state.currentUser = session?.user || null;
+    updateAuthUI();
+
+    if (state.currentUser) {
+      await hydrateRemoteHistory();
+    } else {
+      state.history = loadLocalHistory();
+      renderCalendar();
+      renderSelectedDate();
+      renderMonthTotal();
+    }
+  });
+}
+
+async function getSupabaseConfig() {
+  const remoteConfig = await fetchVercelConfig();
+
+  if (remoteConfig) {
+    return remoteConfig;
+  }
+
+  const config = window.CALCULADORA_SUPABASE || {};
+  const url = String(config.url || '').trim();
+  const anonKey = String(config.anonKey || '').trim();
+
+  return normalizeSupabaseConfig(url, anonKey);
+}
+
+async function fetchVercelConfig() {
+  if (typeof fetch !== 'function') {
+    return null;
+  }
+
+  try {
+    const response = await fetch('/api/config', {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return normalizeSupabaseConfig(data.supabaseUrl, data.supabaseAnonKey);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeSupabaseConfig(urlValue, keyValue) {
+  const url = String(urlValue || '').trim();
+  const anonKey = String(keyValue || '').trim();
+
+  if (!url || !anonKey || !url.includes('.supabase.co')) {
+    return null;
+  }
+
+  return { url, anonKey };
+}
+
+async function restoreSession() {
+  setSyncStatus('Verificando conta...');
+
+  const { data, error } = await state.supabaseClient.auth.getSession();
+
+  if (error) {
+    setAuthMessage(error.message);
+    setSyncStatus('Modo local');
+    return;
+  }
+
+  state.currentUser = data.session?.user || null;
+  updateAuthUI();
+
+  if (state.currentUser) {
+    await hydrateRemoteHistory();
+  } else {
+    setSyncStatus('Login necessário');
+  }
+}
+
+function bindAuth() {
+  const authForm = document.getElementById('auth-form');
+  const signupButton = document.getElementById('signupButton');
+  const logoutButton = document.getElementById('logoutButton');
+
+  authForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (!state.remoteReady) {
+      setAuthMessage('Configure o Supabase antes de entrar.');
+      return;
+    }
+
+    await signIn();
+  });
+
+  signupButton.addEventListener('click', async () => {
+    if (!state.remoteReady) {
+      setAuthMessage('Configure o Supabase antes de criar uma conta.');
+      return;
+    }
+
+    await signUp();
+  });
+
+  logoutButton.addEventListener('click', async () => {
+    if (!state.supabaseClient) {
+      return;
+    }
+
+    await state.supabaseClient.auth.signOut();
+    state.currentUser = null;
+    state.syncMode = 'local';
+    setAuthMessage('');
+    setSyncStatus('Modo local');
+    updateAuthUI();
+  });
+}
+
+async function signIn() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+
+  setAuthMessage('Entrando...');
+
+  const { data, error } = await state.supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    setAuthMessage(error.message);
+    return;
+  }
+
+  state.currentUser = data.user;
+  setAuthMessage('');
+  updateAuthUI();
+  await hydrateRemoteHistory();
+}
+
+async function signUp() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+
+  setAuthMessage('Criando conta...');
+
+  const { data, error } = await state.supabaseClient.auth.signUp({
+    email,
+    password
+  });
+
+  if (error) {
+    setAuthMessage(error.message);
+    return;
+  }
+
+  if (data.session) {
+    state.currentUser = data.user;
+    setAuthMessage('');
+    updateAuthUI();
+    await hydrateRemoteHistory();
+    return;
+  }
+
+  setAuthMessage('Conta criada. Confirme o e-mail para entrar.');
+}
+
+function updateAuthUI() {
+  const authShell = document.getElementById('authShell');
+  const appShell = document.querySelector('.app-shell');
+  const setupNotice = document.getElementById('setupNotice');
+  const logoutButton = document.getElementById('logoutButton');
+  const needsLogin = state.remoteReady && !state.currentUser;
+
+  authShell.hidden = !needsLogin;
+  appShell.hidden = needsLogin;
+  setupNotice.hidden = state.remoteReady;
+  logoutButton.hidden = !state.currentUser;
+
+  if (!state.remoteReady) {
+    setSyncStatus('Modo local');
+  } else if (state.currentUser) {
+    setSyncStatus(`Nuvem: ${state.currentUser.email}`);
+  } else {
+    setSyncStatus('Login necessário');
+  }
+}
 
 function bindNavigation() {
   const menuToggle = document.querySelector('.menu-toggle');
@@ -140,7 +360,7 @@ function calculateOvertime(salarioMensal, divisorMensal, adicionalExtra, horasEx
 }
 
 function bindRegistroForm() {
-  document.getElementById('registro-form').addEventListener('submit', (event) => {
+  document.getElementById('registro-form').addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (!state.selectedDate) {
@@ -155,28 +375,34 @@ function bindRegistroForm() {
       return;
     }
 
-    state.history[state.selectedDate] = horasExtras;
-    saveHistory();
+    const entry = createEntry(horasExtras, document.getElementById('observacaoDia').value);
+    state.history[state.selectedDate] = entry;
+    saveLocalHistory();
     renderCalendar();
     renderSelectedDate();
     renderMonthTotal();
+
+    await persistRemoteEntry(state.selectedDate, entry);
   });
 
-  document.getElementById('excluirDia').addEventListener('click', () => {
+  document.getElementById('excluirDia').addEventListener('click', async () => {
     if (!state.selectedDate) {
       setRegistroMessage('Selecione uma data para excluir.');
       return;
     }
 
-    delete state.history[state.selectedDate];
-    document.getElementById('horasExtras').value = '';
-    saveHistory();
+    const dateKey = state.selectedDate;
+    delete state.history[dateKey];
+    clearSelectedInputs();
+    saveLocalHistory();
     renderCalendar();
     renderSelectedDate();
     renderMonthTotal();
+
+    await deleteRemoteEntry(dateKey);
   });
 
-  document.getElementById('limparHistorico').addEventListener('click', () => {
+  document.getElementById('limparHistorico').addEventListener('click', async () => {
     const monthPrefix = getMonthPrefix(state.calendarDate);
 
     Object.keys(state.history).forEach((dateKey) => {
@@ -185,17 +411,19 @@ function bindRegistroForm() {
       }
     });
 
-    document.getElementById('horasExtras').value = '';
-    saveHistory();
+    clearSelectedInputs();
+    saveLocalHistory();
     renderCalendar();
     renderSelectedDate();
     renderMonthTotal();
+
+    await deleteRemoteMonth(monthPrefix);
   });
 
   document.getElementById('mesAnterior').addEventListener('click', () => {
     state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
     state.selectedDate = null;
-    document.getElementById('horasExtras').value = '';
+    clearSelectedInputs();
     renderCalendar();
     renderSelectedDate();
     renderMonthTotal();
@@ -204,11 +432,152 @@ function bindRegistroForm() {
   document.getElementById('proximoMes').addEventListener('click', () => {
     state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
     state.selectedDate = null;
-    document.getElementById('horasExtras').value = '';
+    clearSelectedInputs();
     renderCalendar();
     renderSelectedDate();
     renderMonthTotal();
   });
+}
+
+async function hydrateRemoteHistory() {
+  if (!isCloudSessionReady()) {
+    return;
+  }
+
+  setSyncStatus('Sincronizando...');
+
+  const localHistory = loadLocalHistory();
+  const remoteHistory = await fetchRemoteHistory();
+
+  if (!remoteHistory) {
+    state.history = localHistory;
+    setSyncStatus('Modo local');
+    return;
+  }
+
+  const missingLocalEntries = Object.entries(localHistory)
+    .filter(([dateKey]) => !remoteHistory[dateKey])
+    .map(([dateKey, entry]) => [dateKey, normalizeEntry(entry)])
+    .filter(([, entry]) => entry);
+
+  if (missingLocalEntries.length > 0) {
+    await upsertRemoteEntries(missingLocalEntries);
+  }
+
+  state.history = {
+    ...localHistory,
+    ...remoteHistory
+  };
+
+  saveLocalHistory();
+  setSyncStatus(`Nuvem: ${state.currentUser.email}`);
+  renderCalendar();
+  renderSelectedDate();
+  renderMonthTotal();
+}
+
+async function fetchRemoteHistory() {
+  const { data, error } = await state.supabaseClient
+    .from('overtime_entries')
+    .select('work_date, hours, notes')
+    .order('work_date', { ascending: true });
+
+  if (error) {
+    setRegistroMessage(`Não foi possível carregar a nuvem: ${error.message}`);
+    return null;
+  }
+
+  return data.reduce((acc, item) => {
+    acc[item.work_date] = createEntry(Number(item.hours), item.notes || '');
+    return acc;
+  }, {});
+}
+
+async function persistRemoteEntry(dateKey, entry) {
+  if (!isCloudSessionReady()) {
+    setRegistroMessage(`${formatDateLabel(dateKey)} salvo neste aparelho.`);
+    return;
+  }
+
+  const { error } = await state.supabaseClient
+    .from('overtime_entries')
+    .upsert(toRemotePayload(dateKey, entry), { onConflict: 'user_id,work_date' });
+
+  if (error) {
+    setRegistroMessage(`${formatDateLabel(dateKey)} salvo localmente. Falha na nuvem: ${error.message}`);
+    return;
+  }
+
+  setRegistroMessage(`${formatDateLabel(dateKey)} salvo e sincronizado.`);
+}
+
+async function upsertRemoteEntries(entries) {
+  if (!isCloudSessionReady() || entries.length === 0) {
+    return;
+  }
+
+  const { error } = await state.supabaseClient
+    .from('overtime_entries')
+    .upsert(entries.map(([dateKey, entry]) => toRemotePayload(dateKey, entry)), {
+      onConflict: 'user_id,work_date'
+    });
+
+  if (error) {
+    setRegistroMessage(`Alguns registros locais não sincronizaram: ${error.message}`);
+  }
+}
+
+async function deleteRemoteEntry(dateKey) {
+  if (!isCloudSessionReady()) {
+    setRegistroMessage(`${formatDateLabel(dateKey)} removido deste aparelho.`);
+    return;
+  }
+
+  const { error } = await state.supabaseClient
+    .from('overtime_entries')
+    .delete()
+    .eq('work_date', dateKey);
+
+  if (error) {
+    setRegistroMessage(`Removido localmente. Falha na nuvem: ${error.message}`);
+    return;
+  }
+
+  setRegistroMessage(`${formatDateLabel(dateKey)} removido da nuvem.`);
+}
+
+async function deleteRemoteMonth(monthPrefix) {
+  if (!isCloudSessionReady()) {
+    setRegistroMessage('Registros do mês removidos deste aparelho.');
+    return;
+  }
+
+  const nextMonth = getNextMonthPrefix(monthPrefix);
+  const { error } = await state.supabaseClient
+    .from('overtime_entries')
+    .delete()
+    .gte('work_date', `${monthPrefix}-01`)
+    .lt('work_date', `${nextMonth}-01`);
+
+  if (error) {
+    setRegistroMessage(`Mês limpo localmente. Falha na nuvem: ${error.message}`);
+    return;
+  }
+
+  setRegistroMessage('Registros do mês removidos da nuvem.');
+}
+
+function toRemotePayload(dateKey, entry) {
+  return {
+    user_id: state.currentUser.id,
+    work_date: dateKey,
+    hours: entry.hours,
+    notes: entry.note || null
+  };
+}
+
+function isCloudSessionReady() {
+  return Boolean(state.remoteReady && state.supabaseClient && state.currentUser);
 }
 
 function renderCalendar() {
@@ -241,17 +610,17 @@ function renderCalendar() {
       }
 
       const dateKey = toDateKey(year, month, day);
-      const hours = state.history[dateKey];
+      const entry = getEntry(dateKey);
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'day-button';
       button.dataset.date = dateKey;
       button.innerHTML = `
         <span>${day}</span>
-        ${isValidNumber(hours) ? `<small>${formatHours(hours)}</small>` : ''}
+        ${entry ? `<small>${formatHours(entry.hours)}</small>` : ''}
       `;
 
-      button.classList.toggle('has-entry', isValidNumber(hours));
+      button.classList.toggle('has-entry', Boolean(entry));
       button.classList.toggle('selected', state.selectedDate === dateKey);
       button.addEventListener('click', () => selectDate(dateKey));
 
@@ -270,9 +639,10 @@ function renderCalendar() {
 
 function selectDate(dateKey) {
   state.selectedDate = dateKey;
-  const hours = state.history[dateKey];
+  const entry = getEntry(dateKey);
 
-  document.getElementById('horasExtras').value = isValidNumber(hours) ? hours : '';
+  document.getElementById('horasExtras').value = entry ? entry.hours : '';
+  document.getElementById('observacaoDia').value = entry ? entry.note : '';
   renderCalendar();
   renderSelectedDate();
 }
@@ -286,12 +656,16 @@ function renderSelectedDate() {
     return;
   }
 
-  const hours = state.history[state.selectedDate];
+  const entry = getEntry(state.selectedDate);
   selectedDate.textContent = formatDateLabel(state.selectedDate);
+
+  if (!entry) {
+    setRegistroMessage(`${formatDateLabel(state.selectedDate)} sem registro.`);
+    return;
+  }
+
   setRegistroMessage(
-    isValidNumber(hours)
-      ? `${formatDateLabel(state.selectedDate)}: ${formatHours(hours)} registradas.`
-      : `${formatDateLabel(state.selectedDate)} sem registro.`
+    `${formatDateLabel(state.selectedDate)}: ${formatHours(entry.hours)} registradas.`
   );
 }
 
@@ -299,7 +673,7 @@ function renderMonthTotal() {
   const monthPrefix = getMonthPrefix(state.calendarDate);
   const total = Object.entries(state.history)
     .filter(([dateKey]) => dateKey.startsWith(monthPrefix))
-    .reduce((sum, [, hours]) => sum + Number(hours), 0);
+    .reduce((sum, [, entry]) => sum + getEntryHours(entry), 0);
 
   document.getElementById('totalMes').innerHTML = `
     <span>Total do mês</span>
@@ -311,26 +685,56 @@ function setRegistroMessage(message) {
   document.getElementById('resultadoRegistro').textContent = message;
 }
 
-function loadHistory() {
+function setAuthMessage(message) {
+  document.getElementById('authMessage').textContent = message;
+}
+
+function setSyncStatus(message) {
+  document.getElementById('syncStatus').textContent = message;
+}
+
+function loadLocalHistory() {
   const current = parseStorage(STORAGE_KEY);
 
   if (current) {
-    return current;
+    return normalizeHistory(current);
   }
 
-  const oldHistory = parseStorage(OLD_STORAGE_KEY);
+  for (const key of LEGACY_STORAGE_KEYS) {
+    const legacy = parseStorage(key);
 
-  if (Array.isArray(oldHistory)) {
-    return oldHistory.reduce((acc, item) => {
-      if (item.data && isValidNumber(Number(item.horasExtras))) {
-        acc[normalizeDateKey(item.data)] = Number(item.horasExtras);
+    if (legacy) {
+      return normalizeHistory(legacy);
+    }
+  }
+
+  return {};
+}
+
+function normalizeHistory(history) {
+  if (Array.isArray(history)) {
+    return history.reduce((acc, item) => {
+      if (item.data) {
+        const entry = createEntry(Number(item.horasExtras), item.notes || item.note || '');
+
+        if (entry) {
+          acc[normalizeDateKey(item.data)] = entry;
+        }
       }
 
       return acc;
     }, {});
   }
 
-  return {};
+  return Object.entries(history).reduce((acc, [dateKey, entry]) => {
+    const normalizedEntry = normalizeEntry(entry);
+
+    if (normalizedEntry) {
+      acc[normalizeDateKey(dateKey)] = normalizedEntry;
+    }
+
+    return acc;
+  }, {});
 }
 
 function parseStorage(key) {
@@ -341,8 +745,45 @@ function parseStorage(key) {
   }
 }
 
-function saveHistory() {
+function saveLocalHistory() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+}
+
+function createEntry(hours, note = '') {
+  if (!isValidNumber(hours)) {
+    return null;
+  }
+
+  return {
+    hours: Number(hours),
+    note: String(note || '').trim()
+  };
+}
+
+function normalizeEntry(entry) {
+  if (typeof entry === 'number') {
+    return createEntry(entry);
+  }
+
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+
+  return createEntry(Number(entry.hours), entry.note || entry.notes || '');
+}
+
+function getEntry(dateKey) {
+  return normalizeEntry(state.history[dateKey]);
+}
+
+function getEntryHours(entry) {
+  const normalizedEntry = normalizeEntry(entry);
+  return normalizedEntry ? normalizedEntry.hours : 0;
+}
+
+function clearSelectedInputs() {
+  document.getElementById('horasExtras').value = '';
+  document.getElementById('observacaoDia').value = '';
 }
 
 function readNumber(id) {
@@ -400,4 +841,10 @@ function normalizeDateKey(dateKey) {
 
 function getMonthPrefix(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function getNextMonthPrefix(monthPrefix) {
+  const [year, month] = monthPrefix.split('-').map(Number);
+  const date = new Date(year, month, 1);
+  return getMonthPrefix(date);
 }

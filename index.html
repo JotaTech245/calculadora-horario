@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#080808" />
   <title>Calculadora de Horários</title>
-  <link rel="stylesheet" href="styles.css?v=2.1" />
+  <link rel="stylesheet" href="styles.css?v=3.0" />
 </head>
 <body>
   <header class="app-header">
@@ -24,12 +24,47 @@
       <button class="menu-item" type="button" data-tab="extras">Horas Extras</button>
       <button class="menu-item" type="button" data-tab="registro">Registro</button>
     </nav>
+
+    <div class="account-bar" aria-live="polite">
+      <span id="syncStatus">Modo local</span>
+      <button class="logout-button" type="button" id="logoutButton" hidden>Sair</button>
+    </div>
   </header>
 
+  <section class="auth-shell" id="authShell" hidden>
+    <div class="auth-card">
+      <p class="eyebrow">Conta</p>
+      <h1>Entrar na Calculadora</h1>
+      <p class="auth-copy">Use e-mail e senha para salvar os registros no celular e no computador.</p>
+
+      <form class="auth-form" id="auth-form">
+        <div class="input-group">
+          <label for="authEmail">E-mail</label>
+          <input type="email" id="authEmail" autocomplete="email" required />
+        </div>
+
+        <div class="input-group">
+          <label for="authPassword">Senha</label>
+          <input type="password" id="authPassword" autocomplete="current-password" minlength="6" required />
+        </div>
+
+        <button class="primary-action" type="submit">Entrar</button>
+        <button class="secondary-action" type="button" id="signupButton">Criar conta</button>
+      </form>
+
+      <p class="auth-message" id="authMessage" role="status"></p>
+    </div>
+  </section>
+
   <main class="app-shell">
+    <section class="setup-notice" id="setupNotice" hidden>
+      <strong>Modo local ativo.</strong>
+      <span>Configure o Supabase para sincronizar os registros entre celular e computador.</span>
+    </section>
+
     <section class="panel active" id="panel-saida" data-panel="saida" aria-labelledby="titulo-saida">
       <div class="panel-heading">
-        <p class="eyebrow">V2</p>
+        <p class="eyebrow">Nuvem</p>
         <h1 id="titulo-saida">Calculadora de Horários</h1>
       </div>
 
@@ -147,6 +182,11 @@
           </div>
         </div>
 
+        <div class="input-group wide-field">
+          <label for="observacaoDia">Observação</label>
+          <textarea id="observacaoDia" rows="3" placeholder="Opcional"></textarea>
+        </div>
+
         <div class="selected-date" id="dataSelecionada">Selecione uma data.</div>
 
         <div class="button-group">
@@ -171,6 +211,8 @@
     © 2025 — Criado com amor, pixel por pixel, só para você, Samara &hearts;
   </footer>
 
-  <script src="script.js?v=2.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=1.0"></script>
+  <script src="script.js?v=3.0"></script>
 </body>
 </html>

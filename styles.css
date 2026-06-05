@@ -31,7 +31,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
 }
 
@@ -108,9 +109,93 @@ button {
   background: #ffffff;
 }
 
+.account-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f7f3eb;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.account-bar span {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-button {
+  min-height: 36px;
+  padding: 0 12px;
+  color: #171207;
+  background: var(--brand);
+  border: 0;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.auth-shell {
+  width: min(560px, calc(100% - 32px));
+  margin: 42px auto;
+}
+
+.auth-card,
+.setup-notice {
+  background: var(--surface);
+  border: 1px solid rgba(222, 216, 204, 0.7);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.auth-card {
+  padding: clamp(24px, 4vw, 38px);
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1.08;
+}
+
+.auth-copy {
+  margin: 12px 0 24px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-form .primary-action,
+.auth-form .secondary-action {
+  width: 100%;
+}
+
+.auth-message {
+  min-height: 22px;
+  margin: 16px 0 0;
+  color: var(--brand-strong);
+  font-weight: 700;
+}
+
 .app-shell {
   width: min(940px, calc(100% - 32px));
   margin: 42px auto;
+}
+
+.setup-notice {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  color: var(--muted);
+}
+
+.setup-notice strong {
+  color: var(--ink);
 }
 
 .panel {
@@ -191,9 +276,9 @@ label,
   background: #fbfaf7;
 }
 
-input {
+input,
+textarea {
   width: 100%;
-  min-height: 48px;
   padding: 0 13px;
   color: var(--ink);
   background: #ffffff;
@@ -203,7 +288,18 @@ input {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus {
+input {
+  min-height: 48px;
+}
+
+textarea {
+  min-height: 86px;
+  padding: 12px 13px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
   border-color: var(--brand);
   box-shadow: 0 0 0 4px rgba(196, 154, 58, 0.18);
 }
@@ -399,6 +495,10 @@ input:focus {
   gap: 10px;
 }
 
+.wide-field {
+  grid-column: 1 / -1;
+}
+
 .summary-row {
   display: grid;
   grid-template-columns: 1fr minmax(180px, 0.45fr);
@@ -422,6 +522,7 @@ input:focus {
 
 @media (max-width: 760px) {
   .app-header {
+    flex-wrap: wrap;
     min-height: 78px;
   }
 
@@ -456,6 +557,24 @@ input:focus {
 
   .app-shell {
     margin: 24px auto;
+  }
+
+  .account-bar {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .account-bar span {
+    max-width: calc(100% - 82px);
+  }
+
+  .auth-shell {
+    margin: 24px auto;
+  }
+
+  .setup-notice {
+    display: grid;
   }
 
   .form-grid,

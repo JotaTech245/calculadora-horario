@@ -24,3 +24,19 @@ npx serve .
 ## V2
 
 Esta versão corrige os cálculos com decimais, melhora o registro mensal, remove funções quebradas e reorganiza a interface para ficar mais prática no celular.
+
+## Supabase + Vercel
+
+A versão com login usa Supabase Auth e a tabela `overtime_entries` para sincronizar os registros entre celular e computador.
+
+1. No Supabase, rode o SQL de `supabase/schema.sql`.
+2. No Vercel, adicione as variáveis de ambiente:
+
+```bash
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_ANON_KEY=sua-chave-anon-ou-publishable
+```
+
+3. Faça um novo deploy.
+
+Nunca use a `service_role key` no frontend. A segurança dos registros depende das políticas RLS do arquivo SQL.
