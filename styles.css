@@ -158,6 +158,12 @@ button {
   align-items: end;
 }
 
+.form-grid > .primary-action {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-width: 190px;
+}
+
 .form-grid.compact {
   grid-template-columns: minmax(220px, 1fr) minmax(180px, auto);
   margin-top: 20px;
@@ -456,6 +462,10 @@ input:focus {
   .form-grid.compact,
   .summary-row {
     grid-template-columns: 1fr;
+  }
+
+  .form-grid > .primary-action {
+    width: 100%;
   }
 
   .row-heading {
