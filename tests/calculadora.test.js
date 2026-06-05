@@ -51,12 +51,10 @@ test('normaliza perfil com padrões úteis', () => {
   const profile = context.normalizeProfile({
     name: ' Samara ',
     workHours: '7.5',
-    monthlyDivisor: '',
-    overtimePercent: ''
+    salary: '2200'
   });
 
   assert.equal(profile.name, 'Samara');
   assert.equal(profile.workHours, 7.5);
-  assert.equal(profile.monthlyDivisor, 220);
-  assert.equal(profile.overtimePercent, 50);
+  assert.equal(profile.salary, 2200);
 });

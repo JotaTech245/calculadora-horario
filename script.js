@@ -8,9 +8,7 @@ const EMPTY_PROFILE = {
   avatarUrl: '',
   workHours: null,
   lunchMinutes: null,
-  salary: null,
-  monthlyDivisor: 220,
-  overtimePercent: 50
+  salary: null
 };
 
 const state = {
@@ -519,9 +517,7 @@ function readProfileForm() {
     avatarUrl: state.profile.avatarUrl,
     workHours: readOptionalNumber('profileWorkHours'),
     lunchMinutes: readOptionalNumber('profileLunchMinutes'),
-    salary: readOptionalNumber('profileSalary'),
-    monthlyDivisor: readOptionalNumber('profileMonthlyDivisor') || 220,
-    overtimePercent: readOptionalNumber('profileOvertimePercent') ?? 50
+    salary: readOptionalNumber('profileSalary')
   });
 }
 
@@ -534,8 +530,6 @@ function renderProfileForm() {
   setInputValue('profileWorkHours', profile.workHours);
   setInputValue('profileLunchMinutes', profile.lunchMinutes);
   setInputValue('profileSalary', profile.salary);
-  setInputValue('profileMonthlyDivisor', profile.monthlyDivisor);
-  setInputValue('profileOvertimePercent', profile.overtimePercent);
   renderProfileAvatar();
 }
 
@@ -573,8 +567,8 @@ function applyProfileDefaults({ silent } = { silent: false }) {
   setInputValue('horasTrabalho', profile.workHours);
   setInputValue('minutosAlmoco', profile.lunchMinutes);
   setInputValue('salarioMensal', profile.salary);
-  setInputValue('divisorMensal', profile.monthlyDivisor);
-  setInputValue('adicionalExtra', profile.overtimePercent);
+  setInputValue('divisorMensal', 220);
+  setInputValue('adicionalExtra', 50);
 
   if (!silent) {
     setProfileMessage('Padrões aplicados nas calculadoras.');
@@ -588,7 +582,7 @@ async function hydrateRemoteProfile() {
 
   const { data, error } = await state.supabaseClient
     .from('profiles')
-    .select('display_name, role_title, avatar_url, default_work_hours, default_lunch_minutes, monthly_salary, monthly_divisor, overtime_percent')
+    .select('display_name, role_title, avatar_url, default_work_hours, default_lunch_minutes, monthly_salary')
     .eq('id', state.currentUser.id)
     .maybeSingle();
 
@@ -604,9 +598,7 @@ async function hydrateRemoteProfile() {
       avatarUrl: data.avatar_url,
       workHours: data.default_work_hours,
       lunchMinutes: data.default_lunch_minutes,
-      salary: data.monthly_salary,
-      monthlyDivisor: data.monthly_divisor,
-      overtimePercent: data.overtime_percent
+      salary: data.monthly_salary
     });
   } else {
     state.profile = normalizeProfile({
@@ -654,9 +646,7 @@ function toRemoteProfilePayload() {
     avatar_url: profile.avatarUrl || null,
     default_work_hours: profile.workHours,
     default_lunch_minutes: profile.lunchMinutes,
-    monthly_salary: profile.salary,
-    monthly_divisor: profile.monthlyDivisor,
-    overtime_percent: profile.overtimePercent
+    monthly_salary: profile.salary
   };
 }
 
@@ -962,9 +952,7 @@ function normalizeProfile(profile) {
     avatarUrl: String(profile?.avatarUrl || '').trim(),
     workHours: normalizeOptionalNumber(profile?.workHours),
     lunchMinutes: normalizeOptionalNumber(profile?.lunchMinutes),
-    salary: normalizeOptionalNumber(profile?.salary),
-    monthlyDivisor: normalizeOptionalNumber(profile?.monthlyDivisor) || 220,
-    overtimePercent: normalizeOptionalNumber(profile?.overtimePercent) ?? 50
+    salary: normalizeOptionalNumber(profile?.salary)
   };
 }
 

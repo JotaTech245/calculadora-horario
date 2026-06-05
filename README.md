@@ -11,7 +11,7 @@ Site publicado: https://jotatech245.github.io/calculadora-horario/
 - Estima o valor de horas extras com divisor mensal e adicional configuráveis.
 - Registra horas extras por dia em calendário mensal.
 - Mostra o total de horas extras do mês.
-- Mantém um perfil com foto, cargo e padrões de jornada.
+- Mantém um perfil com foto, cargo, salário e padrões de jornada.
 - Salva os registros no navegador usando `localStorage`.
 
 ## Como rodar localmente

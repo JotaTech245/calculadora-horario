@@ -50,11 +50,12 @@ create table if not exists public.profiles (
   default_work_hours numeric(5, 2) check (default_work_hours is null or default_work_hours >= 0),
   default_lunch_minutes integer check (default_lunch_minutes is null or default_lunch_minutes >= 0),
   monthly_salary numeric(10, 2) check (monthly_salary is null or monthly_salary >= 0),
-  monthly_divisor integer check (monthly_divisor is null or monthly_divisor > 0),
-  overtime_percent numeric(5, 2) check (overtime_percent is null or overtime_percent >= 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.profiles drop column if exists monthly_divisor;
+alter table public.profiles drop column if exists overtime_percent;
 
 alter table public.profiles enable row level security;
 

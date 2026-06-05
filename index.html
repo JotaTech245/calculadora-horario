@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#080808" />
   <title>Calculadora de Horários</title>
-  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <link rel="stylesheet" href="styles.css?v=3.2" />
 </head>
 <body>
   <header class="app-header">
@@ -262,19 +262,6 @@
           </div>
         </div>
 
-        <div class="input-group">
-          <label for="profileMonthlyDivisor">Divisor mensal</label>
-          <input type="number" id="profileMonthlyDivisor" min="1" step="1" inputmode="numeric" />
-        </div>
-
-        <div class="input-group">
-          <label for="profileOvertimePercent">Adicional padrão</label>
-          <div class="inline-input">
-            <input type="number" id="profileOvertimePercent" min="0" step="1" inputmode="numeric" />
-            <span>%</span>
-          </div>
-        </div>
-
         <div class="button-group">
           <button class="primary-action" type="submit">Salvar perfil</button>
           <button class="secondary-action" type="button" id="applyProfileDefaults">Aplicar padrões</button>
@@ -293,6 +280,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=1.0"></script>
-  <script src="script.js?v=3.1"></script>
+  <script src="script.js?v=3.2"></script>
 </body>
 </html>
