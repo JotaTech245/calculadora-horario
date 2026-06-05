@@ -1,170 +1,403 @@
-// Espera o carregamento completo do DOM antes de executar qualquer código
-window.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const menu = document.querySelector('.menu');
+const STORAGE_KEY = 'historicoHorasExtrasV2';
+const OLD_STORAGE_KEY = 'historicoHorasExtras';
 
-    if (menuToggle && menu) { // Garante que ambos os elementos existem no DOM
-        menuToggle.addEventListener('click', function() {
-            menu.classList.toggle('active'); // Alterna a classe 'active' para mostrar ou esconder o menu
-        });
-    } else {
-        console.log("Erro: Elemento '.menu-toggle' ou '.menu' não encontrado.");
-    }
+const state = {
+  selectedTab: 'saida',
+  calendarDate: new Date(),
+  selectedDate: null,
+  history: {}
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  state.history = loadHistory();
+
+  bindNavigation();
+  bindSaidaForm();
+  bindExtrasForm();
+  bindRegistroForm();
+  renderCalendar();
+  renderMonthTotal();
 });
 
-// Função para calcular o horário de saída
-function calcularSaida() {
+function bindNavigation() {
+  const menuToggle = document.querySelector('.menu-toggle');
+  const menu = document.querySelector('.menu');
+
+  menuToggle.addEventListener('click', () => {
+    const isOpen = menu.classList.toggle('active');
+    menuToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  document.querySelectorAll('[data-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      showTab(button.dataset.tab);
+      menu.classList.remove('active');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+}
+
+function showTab(tabName) {
+  state.selectedTab = tabName;
+
+  document.querySelectorAll('[data-panel]').forEach((panel) => {
+    const isActive = panel.dataset.panel === tabName;
+    panel.hidden = !isActive;
+    panel.classList.toggle('active', isActive);
+  });
+
+  document.querySelectorAll('[data-tab]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.tab === tabName);
+  });
+
+  if (tabName === 'registro') {
+    renderCalendar();
+    renderSelectedDate();
+    renderMonthTotal();
+  }
+}
+
+function bindSaidaForm() {
+  document.getElementById('saida-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+
     const entrada = document.getElementById('entrada').value;
-    const horasTrabalho = parseInt(document.getElementById('horasTrabalho').value);
-    const minutosAlmoco = parseInt(document.getElementById('minutosAlmoco').value);
+    const horasTrabalho = readNumber('horasTrabalho');
+    const minutosAlmoco = readNumber('minutosAlmoco');
+    const resultado = document.getElementById('saidaResultado');
 
-    // Validação de campos
-    if (!entrada || isNaN(horasTrabalho) || isNaN(minutosAlmoco)) {
-        alert("Por favor, preencha todos os campos corretamente.");
-        return;
+    if (!entrada || !isValidNumber(horasTrabalho) || !isValidNumber(minutosAlmoco)) {
+      resultado.textContent = 'Preencha todos os campos com valores válidos.';
+      return;
     }
 
-    const [horas, minutos] = entrada.split(':').map(Number);
-    const tempoEntrada = new Date();
-    tempoEntrada.setHours(horas, minutos, 0, 0);
+    const resultadoSaida = calculateExitTime(entrada, horasTrabalho, minutosAlmoco);
 
-    const tempoTrabalhoMs = horasTrabalho * 60 * 60 * 1000; // horas em milissegundos
-    const tempoAlmocoMs = minutosAlmoco * 60 * 1000; // minutos em milissegundos
-
-    const tempoTotal = tempoEntrada.getTime() + tempoTrabalhoMs + tempoAlmocoMs;
-    const saida = new Date(tempoTotal);
-
-    const horarioSaida = saida.toTimeString().slice(0, 5); // formata para HH:mm
-    document.getElementById('saida').innerText = `Você deve sair às: ${horarioSaida}`;
+    resultado.innerHTML = `
+      <span>Você deve sair às</span>
+      <strong>${resultadoSaida.clock}</strong>
+      ${resultadoSaida.nextDay ? '<small>no dia seguinte</small>' : ''}
+    `;
+  });
 }
 
-// Função para alternar entre as calculadoras
-function mostrarCalculadora(calculadora) {
-    const calculadoras = {
-        'saida': document.getElementById('calculadora-saida'),
-        'extras': document.getElementById('calculadora-extras'),
-        'registro': document.getElementById('calculadora-registro')
-    };
+function bindExtrasForm() {
+  document.getElementById('extras-form').addEventListener('submit', (event) => {
+    event.preventDefault();
 
-    // Esconde todas as calculadoras
-    Object.values(calculadoras).forEach(calc => calc.style.display = 'none');
+    const salarioMensal = readNumber('salarioMensal');
+    const divisorMensal = readNumber('divisorMensal');
+    const adicionalExtra = readNumber('adicionalExtra');
+    const horasExtrasMes = readNumber('horasExtrasMes');
+    const resultado = document.getElementById('extrasResultado');
 
-    // Exibe a calculadora correspondente
-    calculadoras[calculadora].style.display = 'block';
-
-    // Gera o calendário se for a calculadora de registro
-    if (calculadora === 'registro') {
-        gerarCalendario(new Date().getMonth(), new Date().getFullYear());
-    }
-}
-
-// Função para calcular horas extras
-function calcularExtras() {
-    const salarioMensal = parseFloat(document.getElementById('salarioMensal').value);
-    const horasTrabalhadas = parseInt(document.getElementById('horasTrabalhadas').value);
-    const horasExtrasMes = parseInt(document.getElementById('horasExtrasMes').value);
-
-    // Validação de campos
-    if (isNaN(salarioMensal) || isNaN(horasTrabalhadas) || isNaN(horasExtrasMes)) {
-        alert("Por favor, preencha todos os campos corretamente.");
-        return;
+    if (
+      !isValidNumber(salarioMensal) ||
+      !isValidNumber(divisorMensal) ||
+      !isValidNumber(adicionalExtra) ||
+      !isValidNumber(horasExtrasMes) ||
+      divisorMensal <= 0
+    ) {
+      resultado.textContent = 'Preencha todos os campos com valores válidos.';
+      return;
     }
 
-    const salarioDiario = salarioMensal / 30; // Supondo 30 dias no mês
-    const valorHora = salarioDiario / horasTrabalhadas; // Calcula o valor da hora de trabalho
+    const resultadoExtras = calculateOvertime(
+      salarioMensal,
+      divisorMensal,
+      adicionalExtra,
+      horasExtrasMes
+    );
 
-    const ganhoExtras = horasExtrasMes * valorHora * 1.5; // 50% a mais pelas horas extras
-    document.getElementById('resultado-extras').innerText = `Você deve receber R$ ${ganhoExtras.toFixed(2)} em horas extras no mês.`;
+    resultado.innerHTML = `
+      <span>Valor da hora extra</span>
+      <strong>${formatCurrency(resultadoExtras.overtimeRate)}</strong>
+      <small>Total estimado: ${formatCurrency(resultadoExtras.total)}</small>
+    `;
+  });
 }
 
-// Função para salvar o histórico de horas extras
-function salvarHistorico() {
-    const diaSelecionado = document.querySelector('#corpoCalendario td[style*="background-color"]');
-    
-    if (!diaSelecionado) {
-        alert("Por favor, selecione uma data no calendário.");
-        return;
+function calculateExitTime(entrada, horasTrabalho, minutosAlmoco) {
+  const [horas, minutos] = entrada.split(':').map(Number);
+  const totalMinutos = horas * 60 + minutos + horasTrabalho * 60 + minutosAlmoco;
+  const saidaMinutos = normalizeMinutes(totalMinutos);
+
+  return {
+    clock: formatClock(saidaMinutos),
+    nextDay: totalMinutos >= 24 * 60
+  };
+}
+
+function calculateOvertime(salarioMensal, divisorMensal, adicionalExtra, horasExtrasMes) {
+  const valorHora = salarioMensal / divisorMensal;
+  const multiplicadorExtra = 1 + adicionalExtra / 100;
+  const overtimeRate = valorHora * multiplicadorExtra;
+
+  return {
+    overtimeRate,
+    total: horasExtrasMes * overtimeRate
+  };
+}
+
+function bindRegistroForm() {
+  document.getElementById('registro-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (!state.selectedDate) {
+      setRegistroMessage('Selecione uma data no calendário.');
+      return;
     }
 
-    const data = diaSelecionado.getAttribute('data-dia');
-    const horasExtras = parseFloat(document.getElementById('horasExtras').value);
+    const horasExtras = readNumber('horasExtras');
 
-    if (isNaN(horasExtras)) {
-        alert("Por favor, preencha as horas extras corretamente.");
-        return;
+    if (!isValidNumber(horasExtras)) {
+      setRegistroMessage('Informe uma quantidade válida de horas.');
+      return;
     }
 
-    const registro = { data, horasExtras };
+    state.history[state.selectedDate] = horasExtras;
+    saveHistory();
+    renderCalendar();
+    renderSelectedDate();
+    renderMonthTotal();
+  });
 
-    // Recupera o histórico ou inicializa um novo array
-    let historico = JSON.parse(localStorage.getItem('historicoHorasExtras')) || [];
-    historico.push(registro);
-    localStorage.setItem('historicoHorasExtras', JSON.stringify(historico));
-
-    exibirHorasExtras(data);
-}
-
-// Função para exibir as horas extras de um dia específico
-function exibirHorasExtras(dia) {
-    const historico = JSON.parse(localStorage.getItem('historicoHorasExtras')) || [];
-    const horasExtrasDia = historico.find(item => item.data === dia);
-
-    const resultadoRegistro = document.getElementById('resultado-registro');
-    resultadoRegistro.innerHTML = horasExtrasDia
-        ? `Data: ${horasExtrasDia.data} - Horas Extras: ${horasExtrasDia.horasExtras} horas`
-        : "Nenhum registro para esta data.";
-}
-
-// Função para limpar o histórico de horas extras
-function limparHistorico() {
-    localStorage.removeItem('historicoHorasExtras');
-    mostrarHistorico(); // Atualiza a interface após limpar
-}
-
-// Função para gerar o calendário
-function gerarCalendario(mes, ano) {
-    const corpoCalendario = document.getElementById('corpoCalendario');
-    corpoCalendario.innerHTML = '';
-
-    const primeiroDia = new Date(ano, mes, 1);
-    const ultimoDia = new Date(ano, mes + 1, 0);
-    const diasNoMes = ultimoDia.getDate();
-    const diaSemanaInicio = primeiroDia.getDay();
-
-    let diaAtual = 1;
-
-    // Gera o calendário mês a mês
-    for (let i = 0; i < 6; i++) {
-        const linha = document.createElement('tr');
-
-        for (let j = 0; j < 7; j++) {
-            const celula = document.createElement('td');
-            celula.style.padding = '10px';
-
-            if (i === 0 && j < diaSemanaInicio) {
-                celula.textContent = '';
-            } else if (diaAtual <= diasNoMes) {
-                celula.textContent = diaAtual;
-                celula.setAttribute('data-dia', `${ano}-${mes + 1}-${diaAtual}`);
-
-                // Seleciona a data ao clicar
-                celula.onclick = function() {
-                    document.querySelectorAll('#corpoCalendario td').forEach(function(td) {
-                        td.style.backgroundColor = '';
-                    });
-
-                    celula.style.backgroundColor = '#ffb347';
-                    exibirHorasExtras(celula.getAttribute('data-dia'));
-                };
-
-                diaAtual++;
-            }
-
-            linha.appendChild(celula);
-        }
-
-        corpoCalendario.appendChild(linha);
-
-        if (diaAtual > diasNoMes) break;
+  document.getElementById('excluirDia').addEventListener('click', () => {
+    if (!state.selectedDate) {
+      setRegistroMessage('Selecione uma data para excluir.');
+      return;
     }
+
+    delete state.history[state.selectedDate];
+    document.getElementById('horasExtras').value = '';
+    saveHistory();
+    renderCalendar();
+    renderSelectedDate();
+    renderMonthTotal();
+  });
+
+  document.getElementById('limparHistorico').addEventListener('click', () => {
+    const monthPrefix = getMonthPrefix(state.calendarDate);
+
+    Object.keys(state.history).forEach((dateKey) => {
+      if (dateKey.startsWith(monthPrefix)) {
+        delete state.history[dateKey];
+      }
+    });
+
+    document.getElementById('horasExtras').value = '';
+    saveHistory();
+    renderCalendar();
+    renderSelectedDate();
+    renderMonthTotal();
+  });
+
+  document.getElementById('mesAnterior').addEventListener('click', () => {
+    state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
+    state.selectedDate = null;
+    document.getElementById('horasExtras').value = '';
+    renderCalendar();
+    renderSelectedDate();
+    renderMonthTotal();
+  });
+
+  document.getElementById('proximoMes').addEventListener('click', () => {
+    state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
+    state.selectedDate = null;
+    document.getElementById('horasExtras').value = '';
+    renderCalendar();
+    renderSelectedDate();
+    renderMonthTotal();
+  });
+}
+
+function renderCalendar() {
+  const body = document.getElementById('corpoCalendario');
+  const monthLabel = document.getElementById('mesAtual');
+  const year = state.calendarDate.getFullYear();
+  const month = state.calendarDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const totalDays = lastDay.getDate();
+
+  body.innerHTML = '';
+  monthLabel.textContent = state.calendarDate.toLocaleDateString('pt-BR', {
+    month: 'long',
+    year: 'numeric'
+  });
+
+  let day = 1;
+
+  for (let rowIndex = 0; rowIndex < 6; rowIndex++) {
+    const row = document.createElement('tr');
+
+    for (let columnIndex = 0; columnIndex < 7; columnIndex++) {
+      const cell = document.createElement('td');
+
+      if ((rowIndex === 0 && columnIndex < firstDay.getDay()) || day > totalDays) {
+        cell.className = 'empty-day';
+        row.appendChild(cell);
+        continue;
+      }
+
+      const dateKey = toDateKey(year, month, day);
+      const hours = state.history[dateKey];
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'day-button';
+      button.dataset.date = dateKey;
+      button.innerHTML = `
+        <span>${day}</span>
+        ${isValidNumber(hours) ? `<small>${formatHours(hours)}</small>` : ''}
+      `;
+
+      button.classList.toggle('has-entry', isValidNumber(hours));
+      button.classList.toggle('selected', state.selectedDate === dateKey);
+      button.addEventListener('click', () => selectDate(dateKey));
+
+      cell.appendChild(button);
+      row.appendChild(cell);
+      day += 1;
+    }
+
+    body.appendChild(row);
+
+    if (day > totalDays) {
+      break;
+    }
+  }
+}
+
+function selectDate(dateKey) {
+  state.selectedDate = dateKey;
+  const hours = state.history[dateKey];
+
+  document.getElementById('horasExtras').value = isValidNumber(hours) ? hours : '';
+  renderCalendar();
+  renderSelectedDate();
+}
+
+function renderSelectedDate() {
+  const selectedDate = document.getElementById('dataSelecionada');
+
+  if (!state.selectedDate) {
+    selectedDate.textContent = 'Selecione uma data.';
+    setRegistroMessage('Nenhum dia selecionado.');
+    return;
+  }
+
+  const hours = state.history[state.selectedDate];
+  selectedDate.textContent = formatDateLabel(state.selectedDate);
+  setRegistroMessage(
+    isValidNumber(hours)
+      ? `${formatDateLabel(state.selectedDate)}: ${formatHours(hours)} registradas.`
+      : `${formatDateLabel(state.selectedDate)} sem registro.`
+  );
+}
+
+function renderMonthTotal() {
+  const monthPrefix = getMonthPrefix(state.calendarDate);
+  const total = Object.entries(state.history)
+    .filter(([dateKey]) => dateKey.startsWith(monthPrefix))
+    .reduce((sum, [, hours]) => sum + Number(hours), 0);
+
+  document.getElementById('totalMes').innerHTML = `
+    <span>Total do mês</span>
+    <strong>${formatHours(total)}</strong>
+  `;
+}
+
+function setRegistroMessage(message) {
+  document.getElementById('resultadoRegistro').textContent = message;
+}
+
+function loadHistory() {
+  const current = parseStorage(STORAGE_KEY);
+
+  if (current) {
+    return current;
+  }
+
+  const oldHistory = parseStorage(OLD_STORAGE_KEY);
+
+  if (Array.isArray(oldHistory)) {
+    return oldHistory.reduce((acc, item) => {
+      if (item.data && isValidNumber(Number(item.horasExtras))) {
+        acc[normalizeDateKey(item.data)] = Number(item.horasExtras);
+      }
+
+      return acc;
+    }, {});
+  }
+
+  return {};
+}
+
+function parseStorage(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key));
+  } catch {
+    return null;
+  }
+}
+
+function saveHistory() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+}
+
+function readNumber(id) {
+  return Number(String(document.getElementById(id).value).replace(',', '.'));
+}
+
+function isValidNumber(value) {
+  return Number.isFinite(value) && value >= 0;
+}
+
+function normalizeMinutes(minutes) {
+  return ((minutes % (24 * 60)) + 24 * 60) % (24 * 60);
+}
+
+function formatClock(totalMinutes) {
+  const roundedMinutes = Math.round(totalMinutes);
+  const hours = Math.floor(roundedMinutes / 60);
+  const minutes = roundedMinutes % 60;
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+function formatCurrency(value) {
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+}
+
+function formatHours(value) {
+  return `${Number(value).toLocaleString('pt-BR', {
+    maximumFractionDigits: 2
+  })}h`;
+}
+
+function formatDateLabel(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+}
+
+function toDateKey(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function normalizeDateKey(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return toDateKey(year, month - 1, day);
+}
+
+function getMonthPrefix(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }

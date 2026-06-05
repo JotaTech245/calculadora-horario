@@ -2,116 +2,175 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080808" />
   <title>Calculadora de Horários</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header class="app-header">
+    <a class="brand" href="#saida" aria-label="Calculadora de Horários">
+      <img src="imagens/logo.png" alt="Calculadora de Horários" class="logo-img" />
+    </a>
 
-  <!-- Cabeçalho estilo Gilvan Reformas -->
-  <header class="cabecalho">
-    <div class="logo">
-      <img src="imagens/logo.png" alt="Logo" class="logo-img" />
-    </div>
+    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-    <!-- Menu Toggle (Hamburguer) -->
-<div class="menu-toggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-  
-      
-    <!-- Menu -->
-    <nav class="menu">
-      <a href="javascript:void(0)" onclick="mostrarCalculadora('saida')">Saída</a>
-      <a href="javascript:void(0)" onclick="mostrarCalculadora('extras')">Horas Extras</a>
-      <a href="javascript:void(0)" onclick="mostrarCalculadora('registro')">Registro</a>
+    <nav class="menu" aria-label="Calculadoras">
+      <button class="menu-item active" type="button" data-tab="saida">Saída</button>
+      <button class="menu-item" type="button" data-tab="extras">Horas Extras</button>
+      <button class="menu-item" type="button" data-tab="registro">Registro</button>
     </nav>
   </header>
 
-  <!-- Calculadora de Horário de Saída -->
-  <main class="container" id="calculadora-saida">
-    <form>
-      <div class="input-group">
-        <label for="entrada">Horário de Entrada (HH:mm):</label>
-        <input type="time" id="entrada" required />
+  <main class="app-shell">
+    <section class="panel active" id="panel-saida" data-panel="saida" aria-labelledby="titulo-saida">
+      <div class="panel-heading">
+        <p class="eyebrow">V2</p>
+        <h1 id="titulo-saida">Calculadora de Horários</h1>
       </div>
 
-      <div class="input-group">
-        <label for="horasTrabalho">Tempo de Trabalho (horas):</label>
-        <input type="number" id="horasTrabalho" required />
+      <form class="form-grid" id="saida-form">
+        <div class="input-group">
+          <label for="entrada">Horário de entrada</label>
+          <input type="time" id="entrada" required />
+        </div>
+
+        <div class="input-group">
+          <label for="horasTrabalho">Tempo de trabalho</label>
+          <div class="inline-input">
+            <input type="number" id="horasTrabalho" min="0" step="0.25" inputmode="decimal" required />
+            <span>horas</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="minutosAlmoco">Intervalo</label>
+          <div class="inline-input">
+            <input type="number" id="minutosAlmoco" min="0" step="1" inputmode="numeric" required />
+            <span>min</span>
+          </div>
+        </div>
+
+        <button class="primary-action" type="submit">Calcular saída</button>
+      </form>
+
+      <output class="result-card" id="saidaResultado" aria-live="polite">
+        Preencha os campos para calcular.
+      </output>
+    </section>
+
+    <section class="panel" id="panel-extras" data-panel="extras" aria-labelledby="titulo-extras" hidden>
+      <div class="panel-heading">
+        <p class="eyebrow">Pagamento</p>
+        <h1 id="titulo-extras">Horas Extras</h1>
       </div>
 
-      <div class="input-group">
-        <label for="minutosAlmoco">Tempo de Almoço (minutos):</label>
-        <input type="number" id="minutosAlmoco" required />
+      <form class="form-grid" id="extras-form">
+        <div class="input-group">
+          <label for="salarioMensal">Salário mensal</label>
+          <div class="money-input">
+            <span>R$</span>
+            <input type="number" id="salarioMensal" min="0" step="0.01" inputmode="decimal" required />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="divisorMensal">Divisor mensal</label>
+          <input type="number" id="divisorMensal" min="1" step="1" inputmode="numeric" value="220" required />
+        </div>
+
+        <div class="input-group">
+          <label for="adicionalExtra">Adicional</label>
+          <div class="inline-input">
+            <input type="number" id="adicionalExtra" min="0" step="1" inputmode="numeric" value="50" required />
+            <span>%</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="horasExtrasMes">Horas extras no mês</label>
+          <div class="inline-input">
+            <input type="number" id="horasExtrasMes" min="0" step="0.25" inputmode="decimal" required />
+            <span>horas</span>
+          </div>
+        </div>
+
+        <button class="primary-action" type="submit">Calcular valor</button>
+      </form>
+
+      <output class="result-card" id="extrasResultado" aria-live="polite">
+        Informe os dados para calcular.
+      </output>
+    </section>
+
+    <section class="panel" id="panel-registro" data-panel="registro" aria-labelledby="titulo-registro" hidden>
+      <div class="panel-heading row-heading">
+        <div>
+          <p class="eyebrow">Controle mensal</p>
+          <h1 id="titulo-registro">Registro de Horas Extras</h1>
+        </div>
+
+        <div class="month-controls" aria-label="Navegar calendário">
+          <button class="icon-button" type="button" id="mesAnterior" aria-label="Mês anterior">‹</button>
+          <strong id="mesAtual"></strong>
+          <button class="icon-button" type="button" id="proximoMes" aria-label="Próximo mês">›</button>
+        </div>
       </div>
 
-      <button type="button" onclick="calcularSaida()">Calcular Horário de Saída</button>
-    </form>
+      <div class="calendar-wrap">
+        <table class="calendar" aria-label="Calendário de horas extras">
+          <thead>
+            <tr>
+              <th>Dom</th>
+              <th>Seg</th>
+              <th>Ter</th>
+              <th>Qua</th>
+              <th>Qui</th>
+              <th>Sex</th>
+              <th>Sáb</th>
+            </tr>
+          </thead>
+          <tbody id="corpoCalendario"></tbody>
+        </table>
+      </div>
 
-    <h2 id="saida"></h2>
+      <form class="form-grid compact" id="registro-form">
+        <div class="input-group">
+          <label for="horasExtras">Horas extras do dia</label>
+          <div class="inline-input">
+            <input type="number" step="0.25" min="0" id="horasExtras" inputmode="decimal" required />
+            <span>horas</span>
+          </div>
+        </div>
+
+        <div class="selected-date" id="dataSelecionada">Selecione uma data.</div>
+
+        <div class="button-group">
+          <button class="primary-action" type="submit">Salvar dia</button>
+          <button class="secondary-action" type="button" id="excluirDia">Excluir dia</button>
+          <button class="danger-action" type="button" id="limparHistorico">Limpar mês</button>
+        </div>
+      </form>
+
+      <div class="summary-row">
+        <output class="result-card" id="resultadoRegistro" aria-live="polite">
+          Nenhum dia selecionado.
+        </output>
+        <output class="result-card total-card" id="totalMes" aria-live="polite">
+          Total do mês: 0h
+        </output>
+      </div>
+    </section>
   </main>
 
-  <!-- Calculadora de Horas Extras -->
-  <main class="container" id="calculadora-extras" style="display: none;">
-    <h1>Calculadora de Horas Extras</h1>
-    <form>
-      <div class="input-group">
-        <label for="salarioMensal">Salário Mensal (R$):</label>
-        <input type="number" id="salarioMensal" required />
-      </div>
-
-      <div class="input-group">
-        <label for="horasTrabalhadas">Horas Trabalhadas por Dia:</label>
-        <input type="number" id="horasTrabalhadas" required />
-      </div>
-
-      <div class="input-group">
-        <label for="horasExtrasMes">Horas Extras no Mês:</label>
-        <input type="number" id="horasExtrasMes" required />
-      </div>
-
-      <button type="button" onclick="calcularExtras()">Calcular Ganho com Horas Extras</button>
-    </form>
-
-    <h2 id="resultado-extras"></h2>
-  </main>
-
-  <!-- Registro de Horas Extras -->
-  <main class="container" id="calculadora-registro" style="display: none;">
-    <h1>Registro de Horas Extras</h1>
-
-    <div id="calendario">
-      <table>
-        <thead>
-          <tr>
-            <th>D</th><th>S</th><th>T</th><th>Q</th><th>Q</th><th>S</th><th>S</th>
-          </tr>
-        </thead>
-        <tbody id="corpoCalendario">
-          <!-- Preenchido via JS -->
-        </tbody>
-      </table>
-    </div>
-
-    <div class="input-group">
-      <label for="horasExtras">Horas Extras Feitas:</label>
-      <input type="number" step="0.1" id="horasExtras" required />
-    </div>
-
-    <div class="button-group">
-      <button type="button" onclick="salvarHistorico()">Registrar Horas Extras</button>
-      <button type="button" class="limpar" onclick="limparHistorico()">Limpar Histórico</button>
-    </div>
-
-    <h2 id="resultado-registro"></h2>
-  </main>
+  <footer class="app-footer">
+    © 2025 — Criado com amor, pixel por pixel, só para você, Samara &hearts;
+  </footer>
 
   <script src="script.js"></script>
 </body>
 </html>
-<footer>
-    © 2025 — Criado com amor, pixel por pixel, só para você, Samara ❤️
-  </footer>
