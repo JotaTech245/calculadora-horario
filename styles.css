@@ -21,6 +21,7 @@
 
 html {
   min-height: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -357,6 +358,7 @@ textarea {
 
 input {
   min-height: 48px;
+  font-size: 16px;
 }
 
 textarea {
@@ -609,60 +611,131 @@ textarea:focus {
 }
 
 @media (max-width: 760px) {
+  body {
+    background: var(--bg);
+  }
+
   .app-header {
-    flex-wrap: wrap;
-    min-height: 78px;
+    position: sticky;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px 12px;
+    min-height: 0;
+    padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  }
+
+  .auth-mode .app-header {
+    display: flex;
+    justify-content: center;
+  }
+
+  .brand {
+    min-width: 0;
   }
 
   .logo-img {
-    height: 52px;
+    height: 42px;
   }
 
   .menu-toggle {
-    display: block;
+    display: none;
   }
 
   .menu {
-    position: absolute;
-    top: calc(100% - 1px);
-    right: 16px;
-    left: 16px;
-    display: none;
-    grid-template-columns: 1fr;
-    padding: 12px;
+    grid-column: 1 / -1;
+    order: 3;
+    display: flex;
+    gap: 8px;
+    width: calc(100vw - 28px);
+    max-width: 100%;
+    margin-top: 4px;
+    padding: 2px 0 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
     background: #050505;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 16px 28px rgba(0, 0, 0, 0.22);
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .menu.active {
-    display: grid;
+  .menu::-webkit-scrollbar {
+    display: none;
   }
 
   .menu-item {
-    width: 100%;
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 0.95rem;
+    white-space: nowrap;
   }
 
-  .app-shell {
-    margin: 24px auto;
+  .app-shell,
+  .auth-shell {
+    width: min(100% - 20px, 940px);
+    margin: 18px auto;
   }
 
   .account-bar {
-    order: 3;
-    width: 100%;
-    justify-content: space-between;
+    justify-self: end;
+    width: auto;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 8px;
+    font-size: 0.82rem;
   }
 
   .account-bar span {
-    max-width: calc(100% - 82px);
+    max-width: 128px;
   }
 
-  .auth-shell {
-    margin: 24px auto;
+  .account-profile {
+    width: 34px;
+    height: 34px;
+  }
+
+  .logout-button {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 0.88rem;
+  }
+
+  .auth-card,
+  .panel,
+  .setup-notice,
+  .result-card,
+  .app-footer {
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(34, 29, 22, 0.08);
+  }
+
+  .auth-card,
+  .panel {
+    padding: 20px;
+  }
+
+  .auth-card h1,
+  .panel-heading h1 {
+    font-size: 1.9rem;
+    line-height: 1.12;
+  }
+
+  .auth-copy {
+    margin-bottom: 20px;
+    font-size: 0.98rem;
   }
 
   .setup-notice {
     display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+  }
+
+  .panel-heading {
+    margin-bottom: 20px;
   }
 
   .form-grid,
@@ -676,34 +749,118 @@ textarea:focus {
     width: 100%;
   }
 
+  .primary-action,
+  .secondary-action,
+  .danger-action {
+    width: 100%;
+  }
+
   .row-heading {
     display: grid;
+    gap: 14px;
   }
 
   .month-controls {
     grid-template-columns: 42px 1fr 42px;
+    width: 100%;
+  }
+
+  .calendar-wrap {
+    margin-inline: -4px;
+    overflow-x: visible;
+  }
+
+  .calendar {
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .calendar th {
+    padding: 8px 2px;
+    font-size: 0.68rem;
+  }
+
+  .calendar td {
+    height: 54px;
+    padding: 3px;
+  }
+
+  .day-button {
+    gap: 2px;
+    min-height: 46px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+  }
+
+  .day-button small {
+    font-size: 0.68rem;
+    line-height: 1;
   }
 
   .button-group {
     display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .profile-preview {
+    width: 84px;
+    height: 84px;
+  }
+
+  .result-card {
+    min-height: 72px;
+    margin-top: 18px;
+    padding: 14px;
+  }
+
+  .result-card strong {
+    font-size: 2rem;
+  }
+
+  .app-footer {
+    width: min(100% - 20px, 940px);
+    margin-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding: 14px;
+    font-size: 0.82rem;
   }
 }
 
 @media (max-width: 460px) {
-  .app-shell,
-  .app-footer {
-    width: min(100% - 20px, 940px);
-  }
-
+  .auth-card,
   .panel {
-    padding: 18px;
+    padding: 16px;
   }
 
-  .calendar {
-    min-width: 520px;
+  .app-shell,
+  .auth-shell {
+    width: min(100% - 16px, 940px);
+  }
+
+  .auth-card h1,
+  .panel-heading h1 {
+    font-size: 1.72rem;
   }
 
   .calendar td {
-    height: 64px;
+    height: 50px;
+    padding: 2px;
+  }
+
+  .day-button {
+    min-height: 44px;
+    font-size: 0.84rem;
+  }
+
+  .day-button small {
+    font-size: 0.62rem;
+  }
+
+  .account-bar span {
+    max-width: 98px;
+  }
+
+  .menu-item {
+    min-height: 38px;
+    padding: 0 12px;
   }
 }
